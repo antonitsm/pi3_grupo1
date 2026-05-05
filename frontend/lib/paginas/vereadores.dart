@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'vereador_individual.dart';
+import 'projetos.dart';
+import 'partido.dart';
 
 // 🔸 MODEL
 class Vereador {
@@ -81,12 +83,40 @@ class VereadoresPage extends StatelessWidget {
         },
       ),
 
+      // 🔥 FOOTER COM NAVIGATOR
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1, // Vereadores selecionado
         selectedItemColor: Colors.orange,
+
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => ProjetosPage()),
+            );
+          } else if (index == 1) {
+            // já está aqui
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => PartidosPage()),
+            );
+          }
+        },
+
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.description), label: "Projetos"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance), label: "Vereadores"),
-          BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Partidos"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.description),
+            label: "Projetos",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance),
+            label: "Vereadores",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.groups),
+            label: "Partidos",
+          ),
         ],
       ),
     );

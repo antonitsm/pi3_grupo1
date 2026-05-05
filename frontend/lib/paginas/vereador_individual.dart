@@ -12,7 +12,7 @@ class VereadorIndividualPage extends StatelessWidget {
       backgroundColor: Colors.grey[200],
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.orange,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
