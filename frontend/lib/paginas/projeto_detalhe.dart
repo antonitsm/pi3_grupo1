@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tema/app_colors.dart';
 
 class ProjetoDetalhePage extends StatelessWidget {
   const ProjetoDetalhePage({super.key});
