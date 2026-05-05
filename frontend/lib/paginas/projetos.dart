@@ -1,4 +1,4 @@
-import '../tema/app_colors.dart';
+import 'tema/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'projeto_detalhe.dart';
 
