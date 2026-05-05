@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/paginas/projetos.dart';
 import 'paginas/vereadores.dart';
 import 'paginas/vereador_individual.dart';
 import 'paginas/partido.dart';
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: VereadoresPage(),
+      home: ProjetosPage(),
     );
   }
 }
