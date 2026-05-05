@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'paginas/vereadores.dart';
-
+import 'paginas/partido.dart';
+import 'paginas/partido_individual.dart';
 void main() {
   runApp(MyApp());
 }
