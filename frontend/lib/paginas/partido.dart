@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'partido_individual.dart';
+import 'projetos.dart';
+import 'vereadores.dart';
 
 void main() {
   runApp(const MyApp());
