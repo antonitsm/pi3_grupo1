@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'vereador_individual.dart';
 
 // 🔸 MODEL
 class Vereador {
