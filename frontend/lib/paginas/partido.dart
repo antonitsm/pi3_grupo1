@@ -12,9 +12,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const PartidosPage(),
+      home: PartidosPage(),
     );
   }
 }
@@ -45,8 +45,14 @@ class PartidosPage extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                const Icon(Icons.filter_list, size: 28, color: Colors.brown),
+                const Icon(
+                  Icons.filter_list,
+                  size: 28,
+                  color: Colors.brown,
+                ),
+
                 const SizedBox(width: 10),
+
                 const Text(
                   "Partidos",
                   style: TextStyle(
@@ -54,7 +60,9 @@ class PartidosPage extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const Spacer(),
+
                 Container(
                   width: 150,
                   height: 40,
@@ -88,9 +96,33 @@ class PartidosPage extends StatelessWidget {
 
       // FOOTER
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 2,
         backgroundColor: Colors.deepOrange,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
+
+        onTap: (index) {
+          // PROJETOS
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProjetosPage(),
+              ),
+            );
+          }
+
+          // VEREADORES
+          if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => VereadoresPage(),
+              ),
+            );
+          }
+        },
+
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.description),
@@ -116,48 +148,69 @@ class PartidoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 4,
-            offset: Offset(2, 3),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          // LOGO
-          Container(
-            width: 60,
-            height: 60,
-            color: Colors.blueGrey,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PartidoIndividualPage(),
           ),
+        );
+      },
 
-          const SizedBox(width: 12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
+        ),
 
-          // TEXTOS
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                "Sigla partido",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+        padding: const EdgeInsets.all(12),
+
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(16),
+
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(2, 3),
+            )
+          ],
+        ),
+
+        child: Row(
+          children: [
+            // LOGO
+            Container(
+              width: 60,
+              height: 60,
+              color: Colors.blueGrey,
+            ),
+
+            const SizedBox(width: 12),
+
+            // TEXTOS
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Sigla partido",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              Text("Nome do partido"),
-              SizedBox(height: 6),
-              Text("X projetos   X vereadores"),
-            ],
-          )
-        ],
+
+                Text("Nome do partido"),
+
+                SizedBox(height: 6),
+
+                Text("X projetos   X vereadores"),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
