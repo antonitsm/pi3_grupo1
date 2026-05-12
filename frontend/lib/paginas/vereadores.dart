@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/barra_superior.dart';
 import 'vereador_individual.dart';
 import 'projetos.dart';
 import 'partido.dart';
@@ -31,15 +32,7 @@ class VereadoresPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text("Vereadores", style: TextStyle(color: Colors.black)),
-        actions: [
-          Icon(Icons.search, color: Colors.grey),
-          SizedBox(width: 10)
-        ],
-      ),
+     appBar: const BarraSuperior(),
 
       body: ListView.builder(
         itemCount: vereadores.length,
