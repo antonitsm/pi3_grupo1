@@ -13,8 +13,8 @@ class ProjetosPage extends StatefulWidget {
 }
 
 class _ProjetosPageState extends State<ProjetosPage> {
-  bool liked = false;
-bool disliked = false;
+List<bool> liked = [false, false];
+List<bool> disliked = [false, false];
 
   @override
   Widget build(BuildContext context) {
@@ -90,8 +90,8 @@ bool disliked = false;
                 padding: const EdgeInsets.symmetric(horizontal: 16),
 
                 children: [
-                  _card(context, isNew: true),
-                  _card(context),
+                  _card(context, 0, isNew: true),
+                  _card(context, 1),
                 ],
               ),
             ),
@@ -101,7 +101,7 @@ bool disliked = false;
     );
   }
 
-  Widget _card(BuildContext context, {bool isNew = false}) {
+  Widget _card(BuildContext context, int index, {bool isNew = false}) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -179,18 +179,18 @@ bool disliked = false;
   children: [
     GestureDetector(
       onTap: () {
-        setState(() {
-          liked = !liked;
+       setState(() {
+  liked[index] = !liked[index];
 
-          if (liked) {
-            disliked = false;
-          }
-        });
+  if (liked[index]) {
+    disliked[index] = false;
+  }
+});
       },
 
       child: _reaction(
         Icons.thumb_up,
-        liked ? Colors.green : Colors.grey,
+        liked[index] ? Colors.green : Colors.grey,
       ),
     ),
 
@@ -198,18 +198,18 @@ bool disliked = false;
 
     GestureDetector(
       onTap: () {
-        setState(() {
-          disliked = !disliked;
+      setState(() {
+  disliked[index] = !disliked[index];
 
-          if (disliked) {
-            liked = false;
-          }
-        });
+  if (disliked[index]) {
+    liked[index] = false;
+  }
+});
       },
 
       child: _reaction(
         Icons.thumb_down,
-        disliked ? Colors.red : Colors.grey,
+        disliked[index] ? Colors.red : Colors.grey,
       ),
     ),
   ],
@@ -224,7 +224,7 @@ bool disliked = false;
 
   Widget _reaction(IconData icon, Color color) {
     return Container(
-      padding: const0 EdgeInsets.all(6),
+      padding: const EdgeInsets.all(6),
 
       decoration: BoxDecoration(
         color: color,
