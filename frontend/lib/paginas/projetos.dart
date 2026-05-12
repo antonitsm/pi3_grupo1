@@ -5,8 +5,16 @@ import 'projeto_detalhe.dart';
 import 'vereadores.dart';
 import 'partido.dart';
 
-class ProjetosPage extends StatelessWidget {
+class ProjetosPage extends StatefulWidget {
   const ProjetosPage({super.key});
+
+  @override
+  State<ProjetosPage> createState() => _ProjetosPageState();
+}
+
+class _ProjetosPageState extends State<ProjetosPage> {
+  bool liked = false;
+bool disliked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -167,15 +175,45 @@ class ProjetosPage extends StatelessWidget {
                   style: TextStyle(fontSize: 12),
                 ),
 
-                Row(
-                  children: [
-                    _reaction(Icons.thumb_up, Colors.green),
+               Row(
+  children: [
+    GestureDetector(
+      onTap: () {
+        setState(() {
+          liked = !liked;
 
-                    const SizedBox(width: 6),
+          if (liked) {
+            disliked = false;
+          }
+        });
+      },
 
-                    _reaction(Icons.thumb_down, Colors.red),
-                  ],
-                ),
+      child: _reaction(
+        Icons.thumb_up,
+        liked ? Colors.green : Colors.grey,
+      ),
+    ),
+
+    const SizedBox(width: 6),
+
+    GestureDetector(
+      onTap: () {
+        setState(() {
+          disliked = !disliked;
+
+          if (disliked) {
+            liked = false;
+          }
+        });
+      },
+
+      child: _reaction(
+        Icons.thumb_down,
+        disliked ? Colors.red : Colors.grey,
+      ),
+    ),
+  ],
+),
               ],
             ),
           ],
@@ -186,7 +224,7 @@ class ProjetosPage extends StatelessWidget {
 
   Widget _reaction(IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const0 EdgeInsets.all(6),
 
       decoration: BoxDecoration(
         color: color,
