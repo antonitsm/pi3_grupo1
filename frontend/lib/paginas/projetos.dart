@@ -202,43 +202,41 @@ class ProjetosPage extends StatelessWidget {
   }
 
   Widget _bottomNav(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      selectedItemColor: AppColors.primary,
+  return BottomNavigationBar(
+    currentIndex: 0,
+    selectedItemColor: AppColors.primary,
 
-      onTap: (index) {
-        if (index == 0) return;
+    onTap: (index) {
+      if (index == 0) return;
 
-        final pages = [
-          const ProjetosPage(),
-          const VereadoresPage(),
-          const PartidosPage(),
-        ];
+      final pages = [
+        ProjetosPage(),
+        VereadoresPage(),
+        PartidosPage(),
+      ];
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => pages[index],
-          ),
-        );
-      },
-
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.description),
-          label: "Projetos",
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => pages[index],
         ),
+      );
+    },
 
-        BottomNavigationBarItem(
-          icon: Icon(Icons.groups),
-          label: "Vereadores",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people),
-          label: "Partidos",
-        ),
-      ],
-    );
-  }
+    items: const [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.description),
+        label: "Projetos",
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.groups),
+        label: "Vereadores",
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.people),
+        label: "Partidos",
+      ),
+    ],
+  );
 }
+  }
