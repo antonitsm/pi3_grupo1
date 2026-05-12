@@ -1,6 +1,9 @@
-import 'tema/app_colors.dart';
 import 'package:flutter/material.dart';
+
+import 'tema/app_colors.dart';
 import 'projeto_detalhe.dart';
+import 'vereadores.dart';
+import 'partido.dart';
 
 class ProjetosPage extends StatelessWidget {
   const ProjetosPage({super.key});
@@ -9,7 +12,8 @@ class ProjetosPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      bottomNavigationBar: _bottomNav(),
+      bottomNavigationBar: _bottomNav(context),
+
       body: SafeArea(
         child: Column(
           children: [
@@ -23,7 +27,9 @@ class ProjetosPage extends StatelessWidget {
                   width: double.infinity,
                   color: AppColors.primary,
                 ),
+
                 const SizedBox(height: 10),
+
                 const Text(
                   "Projetos",
                   style: TextStyle(
@@ -36,20 +42,25 @@ class ProjetosPage extends StatelessWidget {
 
             const SizedBox(height: 15),
 
-            // BUSCA + FILTRO
+            // BUSCA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
+
               child: Row(
                 children: [
                   Icon(Icons.tune, color: AppColors.primary),
+
                   const SizedBox(width: 10),
+
                   Expanded(
                     child: Container(
                       height: 40,
+
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(30),
                       ),
+
                       child: const TextField(
                         decoration: InputDecoration(
                           hintText: "Buscar",
@@ -69,6 +80,7 @@ class ProjetosPage extends StatelessWidget {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
+
                 children: [
                   _card(context, isNew: true),
                   _card(context),
@@ -86,36 +98,46 @@ class ProjetosPage extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ProjetoDetalhePage()),
+          MaterialPageRoute(
+            builder: (_) => const ProjetoDetalhePage(),
+          ),
         );
       },
+
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(14),
+
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [
+
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 6,
               offset: Offset(0, 3),
-            )
+            ),
           ],
         ),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
-            // título + NEW
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
               children: [
                 const Expanded(
                   child: Text(
                     "Nome projeto de lei postado",
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
+
                 if (isNew)
                   const Text(
                     "NEW",
@@ -123,7 +145,7 @@ class ProjetosPage extends StatelessWidget {
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                     ),
-                  )
+                  ),
               ],
             ),
 
@@ -138,19 +160,24 @@ class ProjetosPage extends StatelessWidget {
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
               children: [
-                const Text("Data: xx/xx/20xx",
-                    style: TextStyle(fontSize: 12)),
+                const Text(
+                  "Data: xx/xx/20xx",
+                  style: TextStyle(fontSize: 12),
+                ),
 
                 Row(
                   children: [
                     _reaction(Icons.thumb_up, Colors.green),
+
                     const SizedBox(width: 6),
+
                     _reaction(Icons.thumb_down, Colors.red),
                   ],
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -160,21 +187,57 @@ class ProjetosPage extends StatelessWidget {
   Widget _reaction(IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(6),
+
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(icon, color: Colors.white, size: 18),
+
+      child: Icon(
+        icon,
+        color: Colors.white,
+        size: 18,
+      ),
     );
   }
 
-  Widget _bottomNav() {
+  Widget _bottomNav(BuildContext context) {
     return BottomNavigationBar(
+      currentIndex: 0,
       selectedItemColor: AppColors.primary,
+
+      onTap: (index) {
+        if (index == 0) return;
+
+        final pages = [
+          const ProjetosPage(),
+          const VereadoresPage(),
+          const PartidosPage(),
+        ];
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => pages[index],
+          ),
+        );
+      },
+
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.description), label: "Projetos"),
-        BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Vereadores"),
-        BottomNavigationBarItem(icon: Icon(Icons.people), label: "Partidos"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.description),
+          label: "Projetos",
+        ),
+
+        BottomNavigationBarItem(
+          icon: Icon(Icons.groups),
+          label: "Vereadores",
+        ),
+
+        BottomNavigationBarItem(
+          icon: Icon(Icons.people),
+          label: "Partidos",
+        ),
       ],
     );
   }
