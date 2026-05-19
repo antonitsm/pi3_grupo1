@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
+import '../widgets/rodape.dart';
+
 import 'vereador_individual.dart';
-import 'projetos.dart';
-import 'partido.dart';
 
 // 🔸 MODEL
 class Vereador {
@@ -18,6 +18,8 @@ class Vereador {
 }
 
 class VereadoresPage extends StatelessWidget {
+  VereadoresPage({super.key});
+
   final List<Vereador> vereadores = List.generate(
     5,
     (index) => Vereador(
@@ -32,10 +34,11 @@ class VereadoresPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
-     appBar: const BarraSuperior(),
+      appBar: const BarraSuperior(),
 
       body: ListView.builder(
         itemCount: vereadores.length,
+
         itemBuilder: (context, index) {
           final v = vereadores[index];
 
@@ -44,28 +47,48 @@ class VereadoresPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => VereadorIndividualPage(vereador: v),
+                  builder: (_) => VereadorIndividualPage(
+                    vereador: v,
+                  ),
                 ),
               );
             },
+
             child: Container(
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(12),
+              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
+
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.orange, width: 2),
+                border: Border.all(
+                  color: Colors.orange,
+                  width: 2,
+                ),
               ),
+
               child: Row(
                 children: [
-                  CircleAvatar(radius: 25, backgroundColor: Colors.black),
-                  SizedBox(width: 10),
+                  const CircleAvatar(
+                    radius: 25,
+                    backgroundColor: Colors.black,
+                  ),
+
+                  const SizedBox(width: 10),
 
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+
                     children: [
-                      Text(v.nome, style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        v.nome,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
                       Text(v.partido),
+
                       Text("${v.projetos} projetos"),
                     ],
                   )
@@ -76,41 +99,8 @@ class VereadoresPage extends StatelessWidget {
         },
       ),
 
-      // 🔥 FOOTER COM NAVIGATOR
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Vereadores selecionado
-        selectedItemColor: Colors.orange,
-
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => ProjetosPage()),
-            );
-          } else if (index == 1) {
-            // já está aqui
-          } else if (index == 2) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => PartidosPage()),
-            );
-          }
-        },
-
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.description),
-            label: "Projetos",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance),
-            label: "Vereadores",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.groups),
-            label: "Partidos",
-          ),
-        ],
+      bottomNavigationBar: const Rodape(
+        paginaAtual: 1,
       ),
     );
   }
