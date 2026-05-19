@@ -49,17 +49,17 @@ class Rodape extends StatelessWidget {
 
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.description),
+          icon: ImageIcon (AssetImage('assets/imagens/iconProjetos.png')),
           label: "Projetos",
         ),
 
         BottomNavigationBarItem(
-          icon: Icon(Icons.account_balance),
+          icon: ImageIcon (AssetImage('assets/imagens/iconVereadores.png')),
           label: "Vereadores",
         ),
 
         BottomNavigationBarItem(
-          icon: Icon(Icons.groups),
+          icon: ImageIcon (AssetImage('assets/imagens/iconPartidos.png')),
           label: "Partidos",
         ),
       ],

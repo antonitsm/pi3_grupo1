@@ -14,7 +14,7 @@ class BarraSuperior extends StatelessWidget
       centerTitle: true,
 
       title: Image.asset(
-        'assets/logo.png',
+        'assets/imagens/imagemBarraSup.png',
         height: 40,
       ),
     );
