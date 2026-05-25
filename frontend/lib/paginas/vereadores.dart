@@ -32,7 +32,7 @@ class VereadoresPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFF9F9F9),
 
       appBar: const BarraSuperior(),
 
@@ -59,10 +59,10 @@ class VereadoresPage extends StatelessWidget {
               padding: const EdgeInsets.all(12),
 
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFFF9F9F9),
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
-                  color: Colors.orange,
+                  color: const Color(0xFFED5523),
                   width: 2,
                 ),
               ),

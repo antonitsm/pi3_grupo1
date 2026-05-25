@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'partido_individual.dart';
 import 'projetos.dart';
 import 'vereadores.dart';
+import '../widgets/rodape.dart';
+import '../widgets/barra_superior.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,15 +30,7 @@ class PartidosPage extends StatelessWidget {
       backgroundColor: Colors.grey[200],
 
       // HEADER
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-        title: const Text(
-          '🏛️',
-          style: TextStyle(color: Colors.red),
-        ),
-      ),
+      appBar: const BarraSuperior(),
 
       body: Column(
         children: [
@@ -95,48 +89,8 @@ class PartidosPage extends StatelessWidget {
       ),
 
       // FOOTER
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        backgroundColor: Colors.deepOrange,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-
-        onTap: (index) {
-          // PROJETOS
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const ProjetosPage(),
-              ),
-            );
-          }
-
-          // VEREADORES
-          if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => VereadoresPage(),
-              ),
-            );
-          }
-        },
-
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.description),
-            label: "Projetos",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: "Vereadores",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.groups),
-            label: "Partidos",
-          ),
-        ],
+      bottomNavigationBar: const Rodape(
+        paginaAtual: 2,
       ),
     );
   }

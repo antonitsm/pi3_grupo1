@@ -4,6 +4,8 @@ import 'tema/app_colors.dart';
 import 'projeto_detalhe.dart';
 import 'vereadores.dart';
 import 'partido.dart';
+import '../widgets/rodape.dart';
+import '../widgets/barra_superior.dart';
 
 class ProjetosPage extends StatefulWidget {
   const ProjetosPage({super.key});
@@ -13,14 +15,18 @@ class ProjetosPage extends StatefulWidget {
 }
 
 class _ProjetosPageState extends State<ProjetosPage> {
-List<bool> liked = [false, false];
-List<bool> disliked = [false, false];
+  List<bool> liked = [false, false];
+  List<bool> disliked = [false, false];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      bottomNavigationBar: _bottomNav(context),
+      backgroundColor: const Color(0xFFF9F9F9),
+      bottomNavigationBar: const Rodape(
+        paginaAtual: 0,
+      ),
+
+      appBar: const BarraSuperior(),
 
       body: SafeArea(
         child: Column(
@@ -30,20 +36,12 @@ List<bool> disliked = [false, false];
             // HEADER
             Column(
               children: [
-                Container(
-                  height: 3,
-                  width: double.infinity,
-                  color: AppColors.primary,
-                ),
-
+                
                 const SizedBox(height: 10),
 
                 const Text(
                   "Projetos",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -56,7 +54,7 @@ List<bool> disliked = [false, false];
 
               child: Row(
                 children: [
-                  Icon(Icons.tune, color: AppColors.primary),
+                  Icon(Icons.tune, color: const Color(0xFFCC3A00)),
 
                   const SizedBox(width: 10),
 
@@ -89,10 +87,7 @@ List<bool> disliked = [false, false];
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
 
-                children: [
-                  _card(context, 0, isNew: true),
-                  _card(context, 1),
-                ],
+                children: [_card(context, 0, isNew: true), _card(context, 1)],
               ),
             ),
           ],
@@ -106,9 +101,7 @@ List<bool> disliked = [false, false];
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => const ProjetoDetalhePage(),
-          ),
+          MaterialPageRoute(builder: (_) => const ProjetoDetalhePage()),
         );
       },
 
@@ -140,9 +133,7 @@ List<bool> disliked = [false, false];
                 const Expanded(
                   child: Text(
                     "Nome projeto de lei postado",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
 
@@ -150,7 +141,7 @@ List<bool> disliked = [false, false];
                   const Text(
                     "NEW",
                     style: TextStyle(
-                      color: AppColors.primary,
+                      color: const Color(0xFFCC3A00),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -170,50 +161,47 @@ List<bool> disliked = [false, false];
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
               children: [
-                const Text(
-                  "Data: xx/xx/20xx",
-                  style: TextStyle(fontSize: 12),
+                const Text("Data: xx/xx/20xx", style: TextStyle(fontSize: 12)),
+
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          liked[index] = !liked[index];
+
+                          if (liked[index]) {
+                            disliked[index] = false;
+                          }
+                        });
+                      },
+
+                      child: _reaction(
+                        Icons.thumb_up,
+                        liked[index] ? Colors.green : Colors.grey,
+                      ),
+                    ),
+
+                    const SizedBox(width: 6),
+
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          disliked[index] = !disliked[index];
+
+                          if (disliked[index]) {
+                            liked[index] = false;
+                          }
+                        });
+                      },
+
+                      child: _reaction(
+                        Icons.thumb_down,
+                        disliked[index] ? Colors.red : Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
-
-               Row(
-  children: [
-    GestureDetector(
-      onTap: () {
-       setState(() {
-  liked[index] = !liked[index];
-
-  if (liked[index]) {
-    disliked[index] = false;
-  }
-});
-      },
-
-      child: _reaction(
-        Icons.thumb_up,
-        liked[index] ? Colors.green : Colors.grey,
-      ),
-    ),
-
-    const SizedBox(width: 6),
-
-    GestureDetector(
-      onTap: () {
-      setState(() {
-  disliked[index] = !disliked[index];
-
-  if (disliked[index]) {
-    liked[index] = false;
-  }
-});
-      },
-
-      child: _reaction(
-        Icons.thumb_down,
-        disliked[index] ? Colors.red : Colors.grey,
-      ),
-    ),
-  ],
-),
               ],
             ),
           ],
@@ -231,50 +219,34 @@ List<bool> disliked = [false, false];
         borderRadius: BorderRadius.circular(8),
       ),
 
-      child: Icon(
-        icon,
-        color: Colors.white,
-        size: 18,
-      ),
+      child: Icon(icon, color: Colors.white, size: 18),
     );
   }
 
   Widget _bottomNav(BuildContext context) {
-  return BottomNavigationBar(
-    currentIndex: 0,
-    selectedItemColor: AppColors.primary,
+    return BottomNavigationBar(
+      currentIndex: 0,
+      selectedItemColor: const Color(0xFFCC3A00),
 
-    onTap: (index) {
-      if (index == 0) return;
+      onTap: (index) {
+        if (index == 0) return;
 
-      final pages = [
-        ProjetosPage(),
-        VereadoresPage(),
-        PartidosPage(),
-      ];
+        final pages = [ProjetosPage(), VereadoresPage(), PartidosPage()];
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => pages[index],
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => pages[index]),
+        );
+      },
+
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.description),
+          label: "Projetos",
         ),
-      );
-    },
-
-    items: const [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.description),
-        label: "Projetos",
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.groups),
-        label: "Vereadores",
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.people),
-        label: "Partidos",
-      ),
-    ],
-  );
-}
+        BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Vereadores"),
+        BottomNavigationBarItem(icon: Icon(Icons.people), label: "Partidos"),
+      ],
+    );
   }
+}

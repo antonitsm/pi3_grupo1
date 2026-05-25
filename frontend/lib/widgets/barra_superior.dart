@@ -8,14 +8,16 @@ class BarraSuperior extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      automaticallyImplyLeading: false,
+      backgroundColor: const Color(0xFFF9F9F9),
       elevation: 0,
 
-      centerTitle: true,
-
-      title: Image.asset(
-        'assets/imagens/imagemBarraSup.png',
-        height: 40,
+      flexibleSpace: SafeArea(
+        child: Image.asset(
+          'assets/imagens/imagemBarraSup.png',
+          width: double.infinity,
+          fit: BoxFit.fitWidth,
+        ),
       ),
     );
   }

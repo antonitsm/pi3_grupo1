@@ -16,9 +16,18 @@ class Rodape extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: paginaAtual,
-      selectedItemColor: Colors.orange,
 
-      onTap: (index) {
+      backgroundColor: const Color(0xFFC33505),
+
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white70,
+
+      selectedFontSize: 14,
+      unselectedFontSize: 13,
+
+      type: BottomNavigationBarType.fixed,
+
+      onTap: (index){
         if (index == 0) {
           Navigator.pushReplacement(
             context,
@@ -49,17 +58,35 @@ class Rodape extends StatelessWidget {
 
       items: const [
         BottomNavigationBarItem(
-          icon: ImageIcon (AssetImage('assets/imagens/iconProjetos.png')),
+          icon: SizedBox(
+            width: 45,
+            height: 45,
+            child: ImageIcon(
+              AssetImage('assets/imagens/iconProjetos.png'),
+            ),
+          ),
           label: "Projetos",
         ),
 
         BottomNavigationBarItem(
-          icon: ImageIcon (AssetImage('assets/imagens/iconVereadores.png')),
+          icon: SizedBox(
+            width: 55,
+            height: 55,
+            child: ImageIcon(
+              AssetImage('assets/imagens/iconVereadores.png'),
+            ),
+          ),
           label: "Vereadores",
         ),
 
         BottomNavigationBarItem(
-          icon: ImageIcon (AssetImage('assets/imagens/iconPartidos.png')),
+          icon: SizedBox(
+            width: 45,
+            height: 45,
+            child: ImageIcon(
+              AssetImage('assets/imagens/iconPartidos.png'),
+            ),
+          ),
           label: "Partidos",
         ),
       ],

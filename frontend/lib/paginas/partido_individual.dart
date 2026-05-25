@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../widgets/barra_superior.dart';
+import '../widgets/rodape.dart';
 
 class PartidoIndividualPage extends StatelessWidget {
   const PartidoIndividualPage({super.key});
@@ -6,21 +8,9 @@ class PartidoIndividualPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFEAEAEA),
 
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.brown),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          '🏛️',
-          style: TextStyle(color: Colors.red),
-        ),
-      ),
+      appBar: const BarraSuperior(),
 
       body: SingleChildScrollView(
         child: Column(
@@ -37,7 +27,7 @@ class PartidoIndividualPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.brown,
+                    color: const Color(0xFFC33505),
                   ),
                 ),
               ),
@@ -50,7 +40,7 @@ class PartidoIndividualPage extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.symmetric(horizontal: 32),
               decoration: BoxDecoration(
-                color: Colors.orange[200],
+                color: const Color(0xFFF67F57),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -101,7 +91,7 @@ class PartidoIndividualPage extends StatelessWidget {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
+                      backgroundColor: const Color(0xFFCC3A00),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -165,24 +155,8 @@ class PartidoIndividualPage extends StatelessWidget {
       ),
 
       // FOOTER
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.deepOrange,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.description),
-            label: "Projetos",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: "Vereadores",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.groups),
-            label: "Partidos",
-          ),
-        ],
+      bottomNavigationBar: const Rodape(
+        paginaAtual: 2,
       ),
     );
   }

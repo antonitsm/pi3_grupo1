@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'tema/app_colors.dart';
+import '../widgets/rodape.dart';
+import '../widgets/barra_superior.dart';
 
 class ProjetoDetalhePage extends StatelessWidget {
   const ProjetoDetalhePage({super.key});
@@ -7,8 +9,9 @@ class ProjetoDetalhePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      bottomNavigationBar: _bottomNav(),
+      backgroundColor: const Color(0xFFF9F9F9),
+      bottomNavigationBar: const Rodape(paginaAtual: 0),
+      appBar: const BarraSuperior(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -30,23 +33,30 @@ class ProjetoDetalhePage extends StatelessWidget {
               const SizedBox(height: 20),
 
               // RESUMO
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.primary),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Resumo IA ✨",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
-                    Text(
-                      "Objetivo: Lorem ipsum dolor sit amet...",
-                      style: TextStyle(fontSize: 13),
-                    ),
-                  ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFFCC3A00)),
+                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFFEAEAEA),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Resumo IA ✨",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        "Objetivo: Lorem ipsum dolor sit amet...",
+                        style: TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -57,7 +67,7 @@ class ProjetoDetalhePage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: const Color(0xFFCC3A00),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -78,10 +88,7 @@ class ProjetoDetalhePage extends StatelessWidget {
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _vereador(),
-                  _vereador(),
-                ],
+                children: [_vereador(), _vereador()],
               ),
 
               const Spacer(),
@@ -93,7 +100,7 @@ class ProjetoDetalhePage extends StatelessWidget {
                   const SizedBox(width: 10),
                   _reaction(Icons.thumb_down, Colors.red),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -124,9 +131,12 @@ class ProjetoDetalhePage extends StatelessWidget {
 
   Widget _bottomNav() {
     return BottomNavigationBar(
-      selectedItemColor: AppColors.primary,
+      selectedItemColor: const Color(0xFFCC3A00),
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.description), label: "Projetos"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.description),
+          label: "Projetos",
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Vereadores"),
         BottomNavigationBarItem(icon: Icon(Icons.people), label: "Partidos"),
       ],

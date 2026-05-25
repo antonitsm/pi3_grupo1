@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'vereadores.dart'; // importa o model
+import 'vereadores.dart'; 
+import '../widgets/rodape.dart';
 
 class VereadorIndividualPage extends StatelessWidget {
   final Vereador vereador;
@@ -12,7 +13,6 @@ class VereadorIndividualPage extends StatelessWidget {
       backgroundColor: Colors.grey[200],
 
       appBar: AppBar(
-        backgroundColor: Colors.orange,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
@@ -58,7 +58,7 @@ class VereadorIndividualPage extends StatelessWidget {
                   Text("20 projetos aprovados"),
                   Text(
                     "3 projetos no último ano",
-                    style: TextStyle(color: Colors.orange),
+                    style: TextStyle(color: Colors.deepOrange),
                   ),
                 ],
               ),
@@ -103,13 +103,8 @@ class VereadorIndividualPage extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.orange,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.description), label: "Projetos"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance), label: "Vereadores"),
-          BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Partidos"),
-        ],
+      bottomNavigationBar: const Rodape(
+        paginaAtual: 1,
       ),
     );
   }
