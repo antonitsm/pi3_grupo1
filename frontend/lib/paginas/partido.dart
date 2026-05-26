@@ -27,54 +27,84 @@ class PartidosPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFEDEDED),
 
       // HEADER
       appBar: const BarraSuperior(),
 
       body: Column(
         children: [
-          // Título + Busca
+          const SizedBox(height: 10),
+
+          // TÍTULO
+          const Center(
+            child: Text(
+              "Partidos",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // FILTRO + BUSCA
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+            ),
+
             child: Row(
               children: [
                 const Icon(
-                  Icons.filter_list,
-                  size: 28,
-                  color: Colors.brown,
+                  Icons.tune,
+                  color: Color(0xFFFF5A1F),
+                  size: 30,
                 ),
 
-                const SizedBox(width: 10),
+                const SizedBox(width: 16),
 
-                const Text(
-                  "Partidos",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Expanded(
+                  child: Container(
+                    height: 52,
 
-                const Spacer(),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD9D9D9),
+                      borderRadius:
+                          BorderRadius.circular(30),
+                    ),
 
-                Container(
-                  width: 150,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const TextField(
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search),
-                      border: InputBorder.none,
-                      hintText: "Buscar",
+                    child: const TextField(
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: Colors.black54,
+                          size: 28,
+                        ),
+
+                        hintText: "Buscar",
+
+                        hintStyle: TextStyle(
+                          fontSize: 16,
+                        ),
+
+                        border: InputBorder.none,
+
+                        contentPadding:
+                            EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
+                      ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
+
+          const SizedBox(height: 20),
 
           // LISTA
           Expanded(
@@ -96,7 +126,7 @@ class PartidosPage extends StatelessWidget {
   }
 }
 
-// CARD DE PARTIDO
+// CARD
 class PartidoCard extends StatelessWidget {
   const PartidoCard({super.key});
 
@@ -107,7 +137,8 @@ class PartidoCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => const PartidoIndividualPage(),
+            builder: (_) =>
+                const PartidoIndividualPage(),
           ),
         );
       },
@@ -118,18 +149,20 @@ class PartidoCard extends StatelessWidget {
           vertical: 10,
         ),
 
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
 
         decoration: BoxDecoration(
           color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(16),
+
+          borderRadius:
+              BorderRadius.circular(16),
 
           boxShadow: const [
             BoxShadow(
-              color: Colors.black26,
-              blurRadius: 4,
-              offset: Offset(2, 3),
-            )
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(2, 2),
+            ),
           ],
         ),
 
@@ -139,30 +172,45 @@ class PartidoCard extends StatelessWidget {
             Container(
               width: 60,
               height: 60,
-              color: Colors.blueGrey,
+
+              decoration: BoxDecoration(
+                color: Colors.blueGrey,
+                borderRadius:
+                    BorderRadius.circular(10),
+              ),
             ),
 
             const SizedBox(width: 12),
 
-            // TEXTOS
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Sigla partido",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            const Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                children: [
+                  Text(
+                    "Sigla partido",
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
 
-                Text("Nome do partido"),
+                  SizedBox(height: 4),
 
-                SizedBox(height: 6),
+                  Text(
+                    "Nome do partido",
+                  ),
 
-                Text("X projetos   X vereadores"),
-              ],
-            )
+                  SizedBox(height: 8),
+
+                  Text(
+                    "X projetos   X vereadores",
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
