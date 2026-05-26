@@ -8,7 +8,7 @@ class PartidoIndividualPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAEAEA),
+      backgroundColor: const Color(0xFFF9F9F9),
 
       appBar: const BarraSuperior(),
 

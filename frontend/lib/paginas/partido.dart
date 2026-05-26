@@ -27,7 +27,7 @@ class PartidosPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFF9F9F9),
 
       // HEADER
       appBar: const BarraSuperior(),
@@ -61,7 +61,7 @@ class PartidosPage extends StatelessWidget {
                   width: 150,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: const Color(0xFFEAEAEA),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const TextField(

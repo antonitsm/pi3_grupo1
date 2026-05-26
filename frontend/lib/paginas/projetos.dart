@@ -63,7 +63,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
                       height: 40,
 
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        color: const Color(0xFFEAEAEA),
                         borderRadius: BorderRadius.circular(30),
                       ),
 
@@ -110,7 +110,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
         padding: const EdgeInsets.all(14),
 
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: const Color(0xFFEAEAEA),
           borderRadius: BorderRadius.circular(18),
 
           boxShadow: const [
