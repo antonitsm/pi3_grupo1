@@ -41,7 +41,7 @@ class PartidosPage extends StatelessWidget {
             child: Text(
               "Partidos",
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -52,57 +52,35 @@ class PartidosPage extends StatelessWidget {
 
           // FILTRO + BUSCA
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-            ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
 
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.tune,
-                  color: Color(0xFFFF5A1F),
-                  size: 30,
-                ),
+              child: Row(
+                children: [
+                  Icon(Icons.tune, color: const Color(0xFFCC3A00)),
 
-                const SizedBox(width: 16),
+                  const SizedBox(width: 10),
 
-                Expanded(
-                  child: Container(
-                    height: 52,
+                  Expanded(
+                    child: Container(
+                      height: 40,
 
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius:
-                          BorderRadius.circular(30),
-                    ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAEAEA),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
 
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.black54,
-                          size: 28,
-                        ),
-
-                        hintText: "Buscar",
-
-                        hintStyle: TextStyle(
-                          fontSize: 16,
-                        ),
-
-                        border: InputBorder.none,
-
-                        contentPadding:
-                            EdgeInsets.symmetric(
-                          vertical: 14,
+                      child: const TextField(
+                        decoration: InputDecoration(
+                          hintText: "Buscar",
+                          border: InputBorder.none,
+                          prefixIcon: Icon(Icons.search),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
           const SizedBox(height: 20),
 
