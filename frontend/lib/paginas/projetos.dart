@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'tema/app_colors.dart';
+import '../mock/mock_data.dart';
 import 'projeto_detalhe.dart';
-import 'vereadores.dart';
-import 'partido.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
 
@@ -15,16 +13,23 @@ class ProjetosPage extends StatefulWidget {
 }
 
 class _ProjetosPageState extends State<ProjetosPage> {
-  List<bool> liked = [false, false];
-  List<bool> disliked = [false, false];
+  late List<bool> liked;
+  late List<bool> disliked;
+
+  @override
+  void initState() {
+    super.initState();
+
+    liked = List.generate(projetosMock.length, (_) => false);
+
+    disliked = List.generate(projetosMock.length, (_) => false);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
-      bottomNavigationBar: const Rodape(
-        paginaAtual: 0,
-      ),
+      bottomNavigationBar: const Rodape(paginaAtual: 0),
 
       appBar: const BarraSuperior(),
 
@@ -36,7 +41,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
             // HEADER
             Column(
               children: [
-                
                 const SizedBox(height: 10),
 
                 const Text(
@@ -87,7 +91,11 @@ class _ProjetosPageState extends State<ProjetosPage> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
 
-                children: [_card(context, 0, isNew: true), _card(context, 1)],
+                children: List.generate(
+                  projetosMock.length,
+                  (index) =>
+                      _card(context, index, projeto: projetosMock[index]),
+                ),
               ),
             ),
           ],
@@ -96,12 +104,18 @@ class _ProjetosPageState extends State<ProjetosPage> {
     );
   }
 
-  Widget _card(BuildContext context, int index, {bool isNew = false}) {
+  Widget _card(
+    BuildContext context,
+    int index, {
+    required Map<String, dynamic> projeto,
+  }) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const ProjetoDetalhePage()),
+          MaterialPageRoute(
+            builder: (_) => ProjetoDetalhePage(projeto: projeto),
+          ),
         );
       },
 
@@ -130,14 +144,14 @@ class _ProjetosPageState extends State<ProjetosPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    "Nome projeto de lei postado",
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                    projeto["titulo"],
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
 
-                if (isNew)
+                if (index > 3)
                   const Text(
                     "NEW",
                     style: TextStyle(
@@ -150,9 +164,25 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
             const SizedBox(height: 6),
 
-            const Text(
-              "Mini descrição IA: Lorem ipsum dolor sit amet...",
-              style: TextStyle(fontSize: 13),
+            Text(
+              projeto["ideia_central"],
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13),
+            ),
+
+            const SizedBox(height: 10),
+
+            Wrap(
+              spacing: 6,
+              children: (projeto["tags"] as List)
+                  .map(
+                    (tag) => Chip(
+                      label: Text(tag),
+                      backgroundColor: const Color(0xFFF67F57),
+                    ),
+                  )
+                  .toList(),
             ),
 
             const SizedBox(height: 10),
@@ -161,7 +191,10 @@ class _ProjetosPageState extends State<ProjetosPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
               children: [
-                const Text("Data: xx/xx/20xx", style: TextStyle(fontSize: 12)),
+                Text(
+                  projeto["data_publicacao"],
+                  style: const TextStyle(fontSize: 12),
+                ),
 
                 Row(
                   children: [
@@ -220,33 +253,6 @@ class _ProjetosPageState extends State<ProjetosPage> {
       ),
 
       child: Icon(icon, color: Colors.white, size: 18),
-    );
-  }
-
-  Widget _bottomNav(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      selectedItemColor: const Color(0xFFCC3A00),
-
-      onTap: (index) {
-        if (index == 0) return;
-
-        final pages = [ProjetosPage(), VereadoresPage(), PartidosPage()];
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => pages[index]),
-        );
-      },
-
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.description),
-          label: "Projetos",
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Vereadores"),
-        BottomNavigationBarItem(icon: Icon(Icons.people), label: "Partidos"),
-      ],
     );
   }
 }

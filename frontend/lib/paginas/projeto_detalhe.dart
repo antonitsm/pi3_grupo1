@@ -1,120 +1,211 @@
 import 'package:flutter/material.dart';
-import 'tema/app_colors.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
+import '../mock/mock_data.dart';
 
 class ProjetoDetalhePage extends StatelessWidget {
-  const ProjetoDetalhePage({super.key});
+  final Map<String, dynamic> projeto;
+
+  const ProjetoDetalhePage({super.key, required this.projeto});
 
   @override
   Widget build(BuildContext context) {
+    final vereadoresProjeto = vereadoresMock
+        .where(
+          (vereador) => (projeto["autoria"] as List).contains(vereador["nome"]),
+        )
+        .toList();
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       bottomNavigationBar: const Rodape(paginaAtual: 0),
       appBar: const BarraSuperior(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.arrow_back),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              const Text(
-                "Projeto - nome do projeto",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-
-              const SizedBox(height: 5),
-              const Text("Publicação: 26/04/2026"),
-
-              const SizedBox(height: 20),
-
-              // RESUMO
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFCC3A00)),
-                    borderRadius: BorderRadius.circular(20),
-                    color: const Color(0xFFEAEAEA),
+                Text(
+                  projeto["titulo"],
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
                   ),
-                  child: const Column(
+                ),
+
+                const SizedBox(height: 5),
+                Text("Publicação: ${projeto["data_publicacao"]}"),
+
+                const SizedBox(height: 20),
+
+                // RESUMO
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAEAEA),
+                    borderRadius: BorderRadius.circular(20),
+
+                    border: Border.all(
+                      color: const Color(0xFFED5523),
+                      width: 2,
+                    ),
+                  ),
+
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Resumo IA ✨",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 8),
+
+                      const SizedBox(height: 12),
+
+                      Text("🎯 Objetivo\n${projeto["ideia_central"]}"),
+
+                      const SizedBox(height: 10),
+
                       Text(
-                        "Objetivo: Lorem ipsum dolor sit amet...",
-                        style: TextStyle(fontSize: 13),
+                        "📍 Localidades afetadas\n${projeto["localidades_afetadas"]}",
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        "📅 Quando será executado\n${projeto["quando_sera_executado"]}",
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        "⚙️ Como será executado\n${projeto["como_sera_executado"]}",
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        "👤 Autoria\n${(projeto["autoria"] as List).join(", ")}",
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      Container(
+                        padding: const EdgeInsets.all(10),
+
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF67F57),
+
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            Text(
+                              "Relevância: ${projeto["relevancia"]}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+
+                            const SizedBox(height: 5),
+
+                            Text(
+                              projeto["justificativa_relevancia"],
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // BOTÃO
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFCC3A00),
-                        foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                // BOTÃO
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFCC3A00),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      print(projeto["texto_original"]);
+                    },
+                    child: const Text(
+                      "Acesse na íntegra aqui!",
+                      selectionColor: Colors.white,
                     ),
                   ),
-                  onPressed: () {},
-                  child: const Text("Acesse na íntegra aqui!"),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              const Text(
-                "Vereadores responsáveis:",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
+                const Text(
+                  "Vereadores responsáveis:",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [_vereador(), _vereador()],
-              ),
+                Wrap(
+                  spacing: 20,
+                  runSpacing: 15,
+                  children: vereadoresProjeto
+                      .map((vereador) => _vereador(vereador))
+                      .toList(),
+                ),
 
-              const Spacer(),
+                const SizedBox(height: 20),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  _reaction(Icons.thumb_up, Colors.green),
-                  const SizedBox(width: 10),
-                  _reaction(Icons.thumb_down, Colors.red),
-                ],
-              ),
-            ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    _reaction(Icons.thumb_up, Colors.green),
+                    const SizedBox(width: 10),
+                    _reaction(Icons.thumb_down, Colors.red),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _vereador() {
+  Widget _vereador(Map<String, dynamic> vereador) {
     return Column(
-      children: const [
-        CircleAvatar(radius: 28, backgroundColor: Colors.black),
-        SizedBox(height: 6),
-        Text("Nome do vereador", style: TextStyle(fontSize: 12)),
+      children: [
+        const CircleAvatar(radius: 30, backgroundColor: Colors.black),
+
+        const SizedBox(height: 6),
+
+        Text(vereador["nome"], style: const TextStyle(fontSize: 12)),
+
+        Text(
+          vereador["partido"],
+          style: const TextStyle(fontSize: 11, color: Colors.grey),
+        ),
       ],
     );
   }
@@ -127,20 +218,6 @@ class ProjetoDetalhePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, color: Colors.white),
-    );
-  }
-
-  Widget _bottomNav() {
-    return BottomNavigationBar(
-      selectedItemColor: const Color(0xFFCC3A00),
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.description),
-          label: "Projetos",
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Vereadores"),
-        BottomNavigationBarItem(icon: Icon(Icons.people), label: "Partidos"),
-      ],
     );
   }
 }
