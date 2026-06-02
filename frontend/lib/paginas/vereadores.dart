@@ -1,32 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
+import '../mock/mock_data.dart';
 import 'vereador_individual.dart';
 
-// MODEL
-class Vereador {
-  final String nome;
-  final String partido;
-  final int projetos;
-
-  Vereador({
-    required this.nome,
-    required this.partido,
-    required this.projetos,
-  });
-}
-
 class VereadoresPage extends StatelessWidget {
-  VereadoresPage({super.key});
-
-  final List<Vereador> vereadores = List.generate(
-    5,
-    (index) => Vereador(
-      nome: "Nome do vereador",
-      partido: "Sigla partido",
-      projetos: 0,
-    ),
-  );
+  const VereadoresPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -52,45 +31,39 @@ class VereadoresPage extends StatelessWidget {
 
           // FILTRO + BUSCA
           Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-
-              child: Row(
-                children: [
-                  Icon(Icons.tune, color: const Color(0xFFCC3A00)),
-
-                  const SizedBox(width: 10),
-
-                  Expanded(
-                    child: Container(
-                      height: 40,
-
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEAEAEA),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-
-                      child: const TextField(
-                        decoration: InputDecoration(
-                          hintText: "Buscar",
-                          border: InputBorder.none,
-                          prefixIcon: Icon(Icons.search),
-                        ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                const Icon(Icons.tune, color: Color(0xFFCC3A00)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAEAEA),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const TextField(
+                      decoration: InputDecoration(
+                        hintText: "Buscar",
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.search),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
           const SizedBox(height: 20),
 
           // LISTA
           Expanded(
             child: ListView.builder(
-              itemCount: vereadores.length,
-
+              itemCount: vereadoresMock.length,
               itemBuilder: (context, index) {
-                final v = vereadores[index];
+                final vereador = vereadoresMock[index];
 
                 return GestureDetector(
                   onTap: () {
@@ -98,35 +71,23 @@ class VereadoresPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            VereadorIndividualPage(
-                          vereador: v,
-                        ),
+                            VereadorIndividualPage(vereador: vereador),
                       ),
                     );
                   },
-
                   child: Container(
-                    margin:
-                        const EdgeInsets.symmetric(
+                    margin: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 10,
                     ),
-
-                    padding:
-                        const EdgeInsets.all(14),
-
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEAEAEA),
                       border: Border.all(
                         color: const Color(0xFFC33505),
-                        width: 2),
-
-                      borderRadius:
-                          BorderRadius.circular(
-                        16,
+                        width: 2,
                       ),
-
-
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: const [
                         BoxShadow(
                           color: Colors.black12,
@@ -135,63 +96,33 @@ class VereadoresPage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     child: Row(
                       children: [
                         Container(
                           width: 60,
                           height: 60,
-
-                          decoration:
-                              BoxDecoration(
-                            color:
-                                Colors.black,
-                            borderRadius:
-                                BorderRadius
-                                    .circular(
-                              10,
-                            ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-
-                        const SizedBox(
-                          width: 12,
-                        ),
-
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
-
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                v.nome,
-
-                                style:
-                                    const TextStyle(
-                                  fontWeight:
-                                      FontWeight
-                                          .bold,
-
+                                vereador["nome"] as String,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
-
-                              const SizedBox(
-                                height: 4,
-                              ),
-
+                              const SizedBox(height: 4),
+                              Text(vereador["partido"] as String),
+                              const SizedBox(height: 8),
                               Text(
-                                v.partido,
-                              ),
-
-                              const SizedBox(
-                                height: 8,
-                              ),
-
-                              Text(
-                                "${v.projetos} projetos",
+                                "${(vereador["projetos"] as List).length} projetos",
                               ),
                             ],
                           ),
@@ -206,10 +137,7 @@ class VereadoresPage extends StatelessWidget {
         ],
       ),
 
-      bottomNavigationBar:
-          const Rodape(
-        paginaAtual: 1,
-      ),
+      bottomNavigationBar: const Rodape(paginaAtual: 1),
     );
   }
 }

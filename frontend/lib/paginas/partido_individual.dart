@@ -1,12 +1,32 @@
 import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
+import '../mock/mock_data.dart';
 
 class PartidoIndividualPage extends StatelessWidget {
-  const PartidoIndividualPage({super.key});
+  final Map<String, dynamic> partido;
+
+  const PartidoIndividualPage({super.key, required this.partido});
 
   @override
   Widget build(BuildContext context) {
+    final sigla = partido["sigla"] as String;
+    final nome = partido["nome"] as String;
+    final anoCriacao = partido["ano_criacao"];
+
+    final vereadoresDoPartido = vereadoresMock
+        .where((v) => v["partido"] as String == sigla)
+        .toList();
+
+    final nomesVereadores = vereadoresDoPartido
+        .map((v) => v["nome"] as String)
+        .toSet();
+
+    final projetosDoPartido = projetosMock
+        .where((p) => (p["autoria"] as List)
+            .any((autor) => nomesVereadores.contains(autor)))
+        .toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
 
@@ -17,17 +37,16 @@ class PartidoIndividualPage extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
 
-            // SIGLA
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Sigla",
-                  style: TextStyle(
+                  sigla,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFC33505),
+                    color: Color(0xFFC33505),
                   ),
                 ),
               ),
@@ -35,7 +54,6 @@ class PartidoIndividualPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // CARD PRINCIPAL
             Container(
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.symmetric(horizontal: 32),
@@ -44,29 +62,29 @@ class PartidoIndividualPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
-                children: const [
-                  CircleAvatar(
+                children: [
+                  const CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.black,
-                    child: Icon(Icons.person, size: 50, color: Colors.white),
+                    child: Icon(Icons.group, size: 50, color: Colors.white),
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text(
-                    "Nome do partido",
-                    style: TextStyle(
+                    nome,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  Text("Sigla partido"),
-                  Text("Desde de {ano}"),
+                  Text(sigla),
+                  Text("Desde $anoCriacao"),
                 ],
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // VEREADORES
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(12),
@@ -78,15 +96,15 @@ class PartidoIndividualPage extends StatelessWidget {
                     color: Colors.black26,
                     blurRadius: 4,
                     offset: Offset(2, 3),
-                  )
+                  ),
                 ],
               ),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      "XX vereadores na câmara",
-                      style: TextStyle(fontSize: 14),
+                      "${vereadoresDoPartido.length} vereador(es) na câmara",
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                   ElevatedButton(
@@ -98,55 +116,77 @@ class PartidoIndividualPage extends StatelessWidget {
                     ),
                     onPressed: () {},
                     child: const Text("Conferir nomes"),
-                  )
+                  ),
                 ],
               ),
             ),
 
             const SizedBox(height: 24),
 
-            // TÍTULO PROJETOS
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Confira os projetos de lei do Partido XXX:",
-                  style: TextStyle(fontSize: 16),
+                  "Confira os projetos de lei do $sigla:",
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ),
 
             const SizedBox(height: 16),
 
-            // CARROSSEL SIMPLES
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.arrow_back_ios),
-
-                Container(
-                  width: 220,
-                  height: 120,
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 4,
-                        offset: Offset(2, 3),
-                      )
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text("Nome projeto de lei postado"),
-                  ),
-                ),
-
-                const Icon(Icons.arrow_forward_ios),
-              ],
+            SizedBox(
+              height: 120,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: projetosDoPartido.length,
+                itemBuilder: (context, index) {
+                  final projeto = projetosDoPartido[index];
+                  return Container(
+                    width: 220,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(2, 3),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            projeto["titulo"] as String,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            projeto["status"] as String,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
 
             const SizedBox(height: 30),
@@ -154,10 +194,8 @@ class PartidoIndividualPage extends StatelessWidget {
         ),
       ),
 
-      // FOOTER
-      bottomNavigationBar: const Rodape(
-        paginaAtual: 2,
-      ),
+      bottomNavigationBar: const Rodape(paginaAtual: 2),
     );
   }
 }
+

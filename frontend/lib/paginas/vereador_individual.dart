@@ -1,111 +1,134 @@
 import 'package:flutter/material.dart';
-import 'vereadores.dart'; 
 import '../widgets/rodape.dart';
+import '../mock/mock_data.dart';
 
 class VereadorIndividualPage extends StatelessWidget {
-  final Vereador vereador;
+  final Map<String, dynamic> vereador;
 
-  const VereadorIndividualPage({required this.vereador});
+  const VereadorIndividualPage({super.key, required this.vereador});
 
   @override
   Widget build(BuildContext context) {
+    final projetosDoVereador = projetosMock
+        .where(
+          (p) => (p["autoria"] as List).contains(vereador["nome"] as String),
+        )
+        .toList();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          vereador.nome,
-          style: TextStyle(color: Colors.black),
+          vereador["nome"] as String,
+          style: const TextStyle(color: Colors.black),
         ),
       ),
 
       body: SingleChildScrollView(
         child: Column(
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-            CircleAvatar(radius: 50, backgroundColor: Colors.black),
+            const CircleAvatar(radius: 50, backgroundColor: Colors.black),
 
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             Text(
-              vereador.nome,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              vereador["nome"] as String,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
-            Text(vereador.partido),
+            Text(vereador["partido"] as String),
 
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-            Text("Início do mandato: 2024"),
+            // TODO: substituir por dado real do back-end (data início mandato)
+            const Text("Início do mandato: 2024"),
 
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
 
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 20),
-              padding: EdgeInsets.all(15),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(
                 children: [
-                  Text("20 projetos aprovados"),
+                  Text("${vereador["projetos_aprovados"]} projetos aprovados"),
                   Text(
-                    "3 projetos no último ano",
-                    style: TextStyle(color: Colors.deepOrange),
+                    "${(vereador["projetos"] as List).length} projeto(s) vinculado(s)",
+                    style: const TextStyle(color: Colors.deepOrange),
                   ),
                 ],
               ),
             ),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-            Text("PROJETOS:", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              "PROJETOS:",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
 
-            Container(
-              margin: EdgeInsets.all(15),
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+            ...projetosDoVereador.map(
+              (projeto) => Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 8,
+                ),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      projeto["titulo"] as String,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "Resumo IA: ${projeto["ideia_central"] as String}",
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Data: ${projeto["data_publicacao"] as String}"),
+                        const Row(
+                          children: [
+                            Icon(Icons.thumb_up, color: Colors.green),
+                            SizedBox(width: 10),
+                            Icon(Icons.thumb_down, color: Colors.red),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Nome projeto de lei postado"),
-                  SizedBox(height: 5),
-                  Text("Mini descrição IA: Lorem ipsum dolor sit amet..."),
-                  SizedBox(height: 10),
+            ),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Data: xx/xx/20xx"),
-                      Row(
-                        children: [
-                          Icon(Icons.thumb_up, color: Colors.green),
-                          SizedBox(width: 10),
-                          Icon(Icons.thumb_down, color: Colors.red),
-                        ],
-                      )
-                    ],
-                  )
-                ],
-              ),
-            )
+            const SizedBox(height: 20),
           ],
         ),
       ),
 
-      bottomNavigationBar: const Rodape(
-        paginaAtual: 1,
-      ),
+      bottomNavigationBar: const Rodape(paginaAtual: 1),
     );
   }
 }
+
+
