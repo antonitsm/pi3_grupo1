@@ -23,8 +23,11 @@ class PartidoIndividualPage extends StatelessWidget {
         .toSet();
 
     final projetosDoPartido = projetosMock
-        .where((p) => (p["autoria"] as List)
-            .any((autor) => nomesVereadores.contains(autor)))
+        .where(
+          (p) => (p["autoria"] as List).any(
+            (autor) => nomesVereadores.contains(autor),
+          ),
+        )
         .toList();
 
     return Scaffold(
@@ -114,11 +117,80 @@ class PartidoIndividualPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) {
+                          return DraggableScrollableSheet(
+                            initialChildSize: 0.4,
+                            minChildSize: 0.3,
+                            maxChildSize: 0.8,
+                            builder: (context, scrollController) {
+                              return Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 10),
+
+                                    Container(
+                                      width: 40,
+                                      height: 5,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 16),
+
+                                    Text(
+                                      "Vereadores do $sigla",
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    Expanded(
+                                      child: ListView.builder(
+                                        controller: scrollController,
+                                        itemCount: vereadoresDoPartido.length,
+                                        itemBuilder: (context, index) {
+                                          final vereador =
+                                              vereadoresDoPartido[index];
+
+                                          return ListTile(
+                                            leading: const CircleAvatar(
+                                              child: Icon(Icons.person),
+                                            ),
+                                            title: Text(
+                                              vereador["nome"] as String,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
                     child: const Text(
-                   "Conferir nomes",
-                   style: TextStyle(color: Colors.white),
-                   ),
+                      "Conferir nomes",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
@@ -201,4 +273,3 @@ class PartidoIndividualPage extends StatelessWidget {
     );
   }
 }
-
