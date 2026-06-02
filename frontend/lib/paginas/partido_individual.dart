@@ -115,7 +115,10 @@ class PartidoIndividualPage extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {},
-                    child: const Text("Conferir nomes"),
+                    child: const Text(
+                   "Conferir nomes",
+                   style: TextStyle(color: Colors.white),
+                   ),
                   ),
                 ],
               ),
