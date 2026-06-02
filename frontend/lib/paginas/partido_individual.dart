@@ -221,15 +221,15 @@ class PartidoIndividualPage extends StatelessWidget {
             const SizedBox(height: 16),
 
             SizedBox(
-              height: 250,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 200,
+              child: PageView.builder(
+                controller: PageController(viewportFraction: 0.9),
                 itemCount: projetosDoPartido.length,
                 itemBuilder: (context, index) {
                   final projeto = projetosDoPartido[index];
-                  return SizedBox(
-                    width: 280,
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: CardProjeto(projeto: projeto),
                   );
                 },
