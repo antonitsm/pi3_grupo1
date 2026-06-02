@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../mock/mock_data.dart';
-import 'projeto_detalhe.dart';
+import '../widgets/projeto_detalhe.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
 
