@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
-import '../widgets/projeto_detalhe.dart';
 import '../widgets/cardprojeto.dart';
 import '../mock/mock_data.dart';
 
@@ -40,7 +39,15 @@ class PartidoIndividualPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
