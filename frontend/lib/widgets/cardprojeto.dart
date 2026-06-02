@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'projeto_detalhe.dart';
 
-class CardProjeto extends StatelessWidget {
+class CardProjeto extends StatefulWidget {
   final Map<String, dynamic> projeto;
 
   const CardProjeto({
     super.key,
     required this.projeto,
   });
+
+  @override
+  State<CardProjeto> createState() => _CardProjetoState();
+}
+
+class _CardProjetoState extends State<CardProjeto> {
+  bool liked = false;
+  bool disliked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +25,7 @@ class CardProjeto extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => ProjetoDetalhePage(
-              projeto: projeto,
+              projeto: widget.projeto,
             ),
           ),
         );
@@ -40,7 +48,7 @@ class CardProjeto extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              projeto["titulo"],
+              widget.projeto["titulo"],
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -49,7 +57,7 @@ class CardProjeto extends StatelessWidget {
             const SizedBox(height: 6),
 
             Text(
-              projeto["ideia_central"],
+              widget.projeto["ideia_central"],
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -58,7 +66,7 @@ class CardProjeto extends StatelessWidget {
 
             Wrap(
               spacing: 6,
-              children: (projeto["tags"] as List)
+              children: (widget.projeto["tags"] as List)
                   .map(
                     (tag) => Chip(
                       label: Text(tag),
@@ -70,12 +78,64 @@ class CardProjeto extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            Text(
-              projeto["data_publicacao"],
-              style: const TextStyle(fontSize: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.projeto["data_publicacao"],
+                  style: const TextStyle(fontSize: 12),
+                ),
+
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          liked = !liked;
+                          if (liked) disliked = false;
+                        });
+                      },
+                      child: _reaction(
+                        Icons.thumb_up,
+                        liked ? Colors.green : Colors.grey,
+                      ),
+                    ),
+
+                    const SizedBox(width: 6),
+
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          disliked = !disliked;
+                          if (disliked) liked = false;
+                        });
+                      },
+                      child: _reaction(
+                        Icons.thumb_down,
+                        disliked ? Colors.red : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _reaction(IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(
+        icon,
+        color: Colors.white,
+        size: 18,
       ),
     );
   }

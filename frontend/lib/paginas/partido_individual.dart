@@ -214,7 +214,7 @@ class PartidoIndividualPage extends StatelessWidget {
             const SizedBox(height: 16),
 
             SizedBox(
-              height: 120,
+              height: 250,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
