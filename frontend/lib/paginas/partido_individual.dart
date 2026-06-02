@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
 import '../widgets/projeto_detalhe.dart';
+import '../widgets/cardprojeto.dart';
 import '../mock/mock_data.dart';
 
 class PartidoIndividualPage extends StatelessWidget {
@@ -220,56 +221,9 @@ class PartidoIndividualPage extends StatelessWidget {
                 itemCount: projetosDoPartido.length,
                 itemBuilder: (context, index) {
                   final projeto = projetosDoPartido[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProjetoDetalhePage(projeto: projeto),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: 220,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(2, 3),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              projeto["titulo"] as String,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              projeto["status"] as String,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  return SizedBox(
+                    width: 280,
+                    child: CardProjeto(projeto: projeto),
                   );
                 },
               ),
