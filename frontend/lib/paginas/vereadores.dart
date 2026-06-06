@@ -43,7 +43,8 @@ class VereadoresPage extends StatelessWidget {
                       color: const Color(0xFFEAEAEA),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const TextField(
+                    child: TextField(
+                      onChanged: (value) {},
                       decoration: InputDecoration(
                         hintText: "Buscar",
                         border: InputBorder.none,
@@ -98,13 +99,27 @@ class VereadoresPage extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: (vereador["foto"] as String).isNotEmpty
+                              ? Image.network(
+                                  vereador["foto"] as String,
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFC33505),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(

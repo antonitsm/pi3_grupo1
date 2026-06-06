@@ -7,13 +7,16 @@ import '../mock/mock_data.dart';
 class PartidoIndividualPage extends StatelessWidget {
   final Map<String, dynamic> partido;
 
-  const PartidoIndividualPage({super.key, required this.partido});
+  const PartidoIndividualPage({
+    super.key,
+    required this.partido,
+  });
 
   @override
   Widget build(BuildContext context) {
     final sigla = partido["sigla"] as String;
     final nome = partido["nome"] as String;
-    final anoCriacao = partido["ano_criacao"];
+    final anoCriacao = partido["ano_criacao"] ?? "Não informado";
 
     final vereadoresDoPartido = vereadoresMock
         .where((v) => v["partido"] as String == sigla)
