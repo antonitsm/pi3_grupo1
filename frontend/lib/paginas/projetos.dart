@@ -15,14 +15,51 @@ class ProjetosPage extends StatefulWidget {
 class _ProjetosPageState extends State<ProjetosPage> {
   late List<bool> liked;
   late List<bool> disliked;
+  List<Map<String, dynamic>> projetosFiltrados = [];
+  String busca = "";
+
+  String tagSelecionada = 'Todos';
+
+  bool maisAntigoPrimeiro = false;
 
   @override
   void initState() {
     super.initState();
 
     liked = List.generate(projetosMock.length, (_) => false);
-
     disliked = List.generate(projetosMock.length, (_) => false);
+
+    projetosFiltrados = List.from(projetosMock);
+  }
+
+  void aplicarFiltro() {
+    setState(() {
+      projetosFiltrados = projetosMock.where((projeto) {
+        if (tagSelecionada == 'Todos') {
+          return true;
+        }
+
+        return (projeto["tags"] as List).contains(tagSelecionada);
+      }).toList();
+    });
+  }
+
+  void filtrarProjetos(String texto) {
+    setState(() {
+      busca = texto.toLowerCase();
+
+      projetosFiltrados = projetosMock.where((projeto) {
+        final titulo = projeto["titulo"].toString().toLowerCase();
+
+        final descricao = projeto["ideia_central"].toString().toLowerCase();
+
+        final tags = (projeto["tags"] as List).join(" ").toLowerCase();
+
+        return titulo.contains(busca) ||
+            descricao.contains(busca) ||
+            tags.contains(busca);
+      }).toList();
+    });
   }
 
   @override
@@ -55,24 +92,74 @@ class _ProjetosPageState extends State<ProjetosPage> {
             // BUSCA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-
               child: Row(
                 children: [
-                  Icon(Icons.tune, color: const Color(0xFFCC3A00)),
+                  IconButton(
+                    icon: const Icon(Icons.tune, color: Color(0xFFCC3A00)),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                title: const Text("Mais curtidos"),
+                                onTap: () {
+                                  setState(() {
+                                    projetosFiltrados.sort(
+                                      (a, b) =>
+                                          b["likes"].compareTo(a["likes"]),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              ListTile(
+                                title: const Text("Mais novos"),
+                                onTap: () {
+                                  setState(() {
+                                    projetosFiltrados.sort(
+                                      (a, b) => b["data_publicacao"].compareTo(
+                                        a["data_publicacao"],
+                                      ),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              ListTile(
+                                title: const Text("Mais antigos"),
+                                onTap: () {
+                                  setState(() {
+                                    projetosFiltrados.sort(
+                                      (a, b) => a["data_publicacao"].compareTo(
+                                        b["data_publicacao"],
+                                      ),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
 
                   const SizedBox(width: 10),
 
                   Expanded(
                     child: Container(
                       height: 40,
-
                       decoration: BoxDecoration(
                         color: const Color(0xFFEAEAEA),
                         borderRadius: BorderRadius.circular(30),
                       ),
-
-                      child: const TextField(
-                        decoration: InputDecoration(
+                      child: TextField(
+                        onChanged: filtrarProjetos,
+                        decoration: const InputDecoration(
                           hintText: "Buscar",
                           border: InputBorder.none,
                           prefixIcon: Icon(Icons.search),
@@ -92,9 +179,9 @@ class _ProjetosPageState extends State<ProjetosPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
 
                 children: List.generate(
-                  projetosMock.length,
+                  projetosFiltrados.length,
                   (index) =>
-                      _card(context, index, projeto: projetosMock[index]),
+                      _card(context, index, projeto: projetosFiltrados[index]),
                 ),
               ),
             ),
@@ -256,4 +343,3 @@ class _ProjetosPageState extends State<ProjetosPage> {
     );
   }
 }
-
