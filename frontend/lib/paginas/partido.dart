@@ -20,8 +20,36 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class PartidosPage extends StatelessWidget {
+class PartidosPage extends StatefulWidget {
   const PartidosPage({super.key});
+
+  @override
+  State<PartidosPage> createState() => _PartidosPageState();
+}
+
+class _PartidosPageState extends State<PartidosPage> {
+  List<Map<String, dynamic>> partidosFiltrados = [];
+  String busca = "";
+
+  @override
+  void initState() {
+    super.initState();
+    partidosFiltrados = List.from(partidosMock);
+  }
+
+  void filtrarPartidos(String texto) {
+    setState(() {
+      busca = texto.toLowerCase();
+
+      partidosFiltrados = partidosMock.where((partido) {
+        final nome = partido["nome"].toString().toLowerCase();
+
+        final sigla = partido["sigla"].toString().toLowerCase();
+
+        return nome.contains(busca) || sigla.contains(busca);
+      }).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +83,69 @@ class PartidosPage extends StatelessWidget {
 
             child: Row(
               children: [
-                Icon(Icons.tune, color: const Color(0xFFCC3A00)),
+                IconButton(
+                  icon: const Icon(Icons.tune, color: Color(0xFFCC3A00)),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              title: const Text("A-Z"),
+                              onTap: () {
+                                setState(() {
+                                  partidosFiltrados.sort(
+                                    (a, b) => a["sigla"].compareTo(b["sigla"]),
+                                  );
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            ListTile(
+                              title: const Text("Z-A"),
+                              onTap: () {
+                                setState(() {
+                                  partidosFiltrados.sort(
+                                    (a, b) => b["sigla"].compareTo(a["sigla"]),
+                                  );
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            ListTile(
+                              title: const Text("Mais antigos"),
+                              onTap: () {
+                                setState(() {
+                                  partidosFiltrados.sort(
+                                    (a, b) => a["ano_criacao"].compareTo(
+                                      b["ano_criacao"],
+                                    ),
+                                  );
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            ListTile(
+                              title: const Text("Mais novos"),
+                              onTap: () {
+                                setState(() {
+                                  partidosFiltrados.sort(
+                                    (a, b) => b["ano_criacao"].compareTo(
+                                      a["ano_criacao"],
+                                    ),
+                                  );
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
 
                 const SizedBox(width: 10),
 
@@ -68,9 +158,10 @@ class PartidosPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
 
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        hintText: "Buscar",
+                    child: TextField(
+                      onChanged: filtrarPartidos,
+                      decoration: const InputDecoration(
+                        hintText: "Buscar partido",
                         border: InputBorder.none,
                         prefixIcon: Icon(Icons.search),
                       ),
@@ -86,9 +177,9 @@ class PartidosPage extends StatelessWidget {
           // LISTA
           Expanded(
             child: ListView.builder(
-              itemCount: partidosMock.length,
+              itemCount: partidosFiltrados.length,
               itemBuilder: (context, index) {
-                final partido = partidosMock[index];
+                final partido = partidosFiltrados[index];
 
                 return PartidoCard(partido: partido);
               },
