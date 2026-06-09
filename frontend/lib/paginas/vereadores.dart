@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
@@ -13,54 +12,28 @@ class VereadoresPage extends StatefulWidget {
 }
  
 class _VereadoresPageState extends State<VereadoresPage> {
-  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> vereadoresFiltrados = [];
+  String busca = '';
  
-  String _busca = '';
- 
-  // 'none' | 'asc' | 'desc'
-  String _ordenacao = 'none';
- 
-  List<Map<String, dynamic>> get _vereadoresFiltrados {
-    List<Map<String, dynamic>> lista = vereadoresMock
-        .cast<Map<String, dynamic>>()
-        .where((v) {
-          final termo = _busca.toLowerCase();
-          return (v['nome'] as String).toLowerCase().contains(termo) ||
-              (v['partido'] as String).toLowerCase().contains(termo);
-        })
-        .toList();
- 
-    if (_ordenacao == 'asc') {
-      lista.sort((a, b) =>
-          (a['projetos'] as List).length.compareTo((b['projetos'] as List).length));
-    } else if (_ordenacao == 'desc') {
-      lista.sort((a, b) =>
-          (b['projetos'] as List).length.compareTo((a['projetos'] as List).length));
-    }
- 
-    return lista;
+  @override
+  void initState() {
+    super.initState();
+    vereadoresFiltrados = List.from(vereadoresMock);
   }
  
-  void _alternarOrdenacao() {
+  void filtrarVereadores(String texto) {
     setState(() {
-      if (_ordenacao == 'none' || _ordenacao == 'desc') {
-        _ordenacao = 'asc';
-      } else {
-        _ordenacao = 'desc';
-      }
+      busca = texto.toLowerCase();
+      vereadoresFiltrados = vereadoresMock.where((v) {
+        final nome = (v['nome'] as String).toLowerCase();
+        final partido = (v['partido'] as String).toLowerCase();
+        return nome.contains(busca) || partido.contains(busca);
+      }).toList();
     });
   }
  
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
- 
-  @override
   Widget build(BuildContext context) {
-    final lista = _vereadoresFiltrados;
- 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
  
@@ -86,39 +59,48 @@ class _VereadoresPageState extends State<VereadoresPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Tooltip(
-                  message: _ordenacao == 'asc'
-                      ? 'Ordenando: menos projetos primeiro'
-                      : _ordenacao == 'desc'
-                          ? 'Ordenando: mais projetos primeiro'
-                          : 'Ordenar por quantidade de projetos',
-                  child: GestureDetector(
-                    onTap: _alternarOrdenacao,
-                    child: Stack(
-                      alignment: Alignment.topRight,
-                      children: [
-                        Icon(
-                          Icons.tune,
-                          color: _ordenacao != 'none'
-                              ? const Color(0xFFCC3A00)
-                              : const Color(0xFFCC3A00),
-                          size: 28,
-                        ),
-                        if (_ordenacao != 'none')
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Icon(
-                              _ordenacao == 'asc'
-                                  ? Icons.arrow_upward
-                                  : Icons.arrow_downward,
-                              color: const Color(0xFFCC3A00),
-                              size: 12,
+                IconButton(
+                  icon: const Icon(Icons.tune, color: Color(0xFFCC3A00)),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              title: const Text("Mais projetos primeiro"),
+                              onTap: () {
+                                setState(() {
+                                  vereadoresFiltrados.sort(
+                                    (a, b) =>
+                                        (b['projetos'] as List).length.compareTo(
+                                              (a['projetos'] as List).length,
+                                            ),
+                                  );
+                                });
+                                Navigator.pop(context);
+                              },
                             ),
-                          ),
-                      ],
-                    ),
-                  ),
+                            ListTile(
+                              title: const Text("Menos projetos primeiro"),
+                              onTap: () {
+                                setState(() {
+                                  vereadoresFiltrados.sort(
+                                    (a, b) =>
+                                        (a['projetos'] as List).length.compareTo(
+                                              (b['projetos'] as List).length,
+                                            ),
+                                  );
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                 ),
  
                 const SizedBox(width: 10),
@@ -131,12 +113,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) {
-                        setState(() {
-                          _busca = value;
-                        });
-                      },
+                      onChanged: filtrarVereadores,
                       decoration: const InputDecoration(
                         hintText: "Buscar",
                         border: InputBorder.none,
@@ -149,54 +126,14 @@ class _VereadoresPageState extends State<VereadoresPage> {
             ),
           ),
  
-          // Indicador de ordenação ativa
-          if (_ordenacao != 'none')
-            Padding(
-              padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
-              child: Row(
-                children: [
-                  const SizedBox(width: 38),
-                  Icon(
-                    _ordenacao == 'asc'
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward,
-                    size: 14,
-                    color: const Color(0xFFCC3A00),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _ordenacao == 'asc'
-                        ? 'Menos projetos primeiro'
-                        : 'Mais projetos primeiro',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFFCC3A00),
-                    ),
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () => setState(() => _ordenacao = 'none'),
-                    child: const Text(
-                      'Limpar',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFFCC3A00),
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
- 
           const SizedBox(height: 20),
  
           // LISTA
           Expanded(
             child: ListView.builder(
-              itemCount: lista.length,
+              itemCount: vereadoresFiltrados.length,
               itemBuilder: (context, index) {
-                final vereador = lista[index];
+                final vereador = vereadoresFiltrados[index];
  
                 return GestureDetector(
                   onTap: () {
