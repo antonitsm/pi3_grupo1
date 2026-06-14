@@ -24,27 +24,59 @@ db = firestore.client()
 # =====================
 
 # ==================================================
+# POST /projetos
 # GET /projetos
 # ==================================================
 """
-Returns a list of all projects stored in Firestore.
+Create a new project (POST) or return a list of all
+projects stored in Firestore (GET).
 """
 @https_fn.on_request()
 def projetos(req):
-    docs = db.collection("projetos").stream()
+    if req.method == "POST":
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
 
-    data = [
-        {
-            "id": doc.id,
-            **doc.to_dict()
-        }
-        for doc in docs
-    ]
+        if not data:
+            return https_fn.Response(
+                json.dumps({"error": "Request body is required"}),
+                status=400,
+                content_type="application/json"
+            )
 
-    return https_fn.Response(
-        json.dumps(data, default=str),
-        content_type="application/json"
-    )
+        doc_ref = db.collection("projetos").document()
+        doc_ref.set(data)
+
+        return https_fn.Response(
+            json.dumps({
+                "id": doc_ref.id,
+                **data
+            }),
+            status=201,
+            content_type="application/json"
+        )
+
+    elif req.method == "GET":
+        docs = db.collection("projetos").stream()
+
+        data = [
+            {
+                "id": doc.id,
+                **doc.to_dict()
+            }
+            for doc in docs
+        ]
+
+        return https_fn.Response(
+            json.dumps(data, default=str),
+            content_type="application/json"
+        )
 
 # ==================================================
 # GET /projeto?id=<project_id>
@@ -154,24 +186,62 @@ def projeto(req):
 
 # ==================================================
 # GET /vereadores
+# POST /vereadores
 # ==================================================
 """
-Returns all council members (vereadores).
+Create a new council member (POST) or return a list
+of all council members stored in Firestore (GET).
 """
 @https_fn.on_request()
 def vereadores(req):
-    docs = db.collection("vereadores").stream()
+    if req.method == "POST":
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
 
-    data = [
-        {
-            "id": doc.id,
-            **doc.to_dict()
-        }
-        for doc in docs
-    ]
+        if not data:
+            return https_fn.Response(
+                json.dumps({"error": "Request body is required"}),
+                status=400,
+                content_type="application/json"
+            )
+
+        doc_ref = db.collection("vereadores").document()
+        doc_ref.set(data)
+
+        return https_fn.Response(
+            json.dumps({
+                "id": doc_ref.id,
+                **data
+            }),
+            status=201,
+            content_type="application/json"
+        )
+
+    elif req.method == "GET":
+        docs = db.collection("vereadores").stream()
+
+        data = [
+            {
+                "id": doc.id,
+                **doc.to_dict()
+            }
+            for doc in docs
+        ]
+
+        return https_fn.Response(
+            json.dumps(data, default=str),
+            content_type="application/json"
+        )
 
     return https_fn.Response(
-        json.dumps(data, default=str),
+        json.dumps({"error": "Method not allowed"}),
+        status=405,
         content_type="application/json"
     )
 
@@ -282,24 +352,62 @@ def vereador(req):
 
 # ==================================================
 # GET /partidos
+# POST /partidos
 # ==================================================
 """
-Returns all political parties.
+Create a new political party (POST) or return a list
+of all political parties (GET).
 """
 @https_fn.on_request()
 def partidos(req):
-    docs = db.collection("partidos").stream()
+    if req.method == "POST":
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
 
-    data = [
-        {
-            "id": doc.id,
-            **doc.to_dict()
-        }
-        for doc in docs
-    ]
+        if not data:
+            return https_fn.Response(
+                json.dumps({"error": "Request body is required"}),
+                status=400,
+                content_type="application/json"
+            )
+
+        doc_ref = db.collection("partidos").document()
+        doc_ref.set(data)
+
+        return https_fn.Response(
+            json.dumps({
+                "id": doc_ref.id,
+                **data
+            }),
+            status=201,
+            content_type="application/json"
+        )
+
+    elif req.method == "GET":
+        docs = db.collection("partidos").stream()
+
+        data = [
+            {
+                "id": doc.id,
+                **doc.to_dict()
+            }
+            for doc in docs
+        ]
+
+        return https_fn.Response(
+            json.dumps(data, default=str),
+            content_type="application/json"
+        )
 
     return https_fn.Response(
-        json.dumps(data, default=str),
+        json.dumps({"error": "Method not allowed"}),
+        status=405,
         content_type="application/json"
     )
 
@@ -746,7 +854,7 @@ def populate_archive(req):
 
         ids = set(
             re.findall(
-                r"/atos/(\d+)",
+                r'/atos/(\d+)',
                 response.text
             )
         )
@@ -755,7 +863,7 @@ def populate_archive(req):
 
         print(f"Found {page_count} acts")
 
-        # End of pagination
+        # No results = end of pagination
         if page_count == 0:
             break
 
@@ -767,29 +875,38 @@ def populate_archive(req):
                 .document(ato_id)
             )
 
-            try:
-                doc_ref.create({
-                    "id": ato_id,
-                    "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
-                    "date": None,
-                    "createdAt": SERVER_TIMESTAMP,
-                    "updatedAt": SERVER_TIMESTAMP
-                })
+        try:
+            doc_ref.create({
+                "id": ato_id,
+                "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
+                "date": None,
+                "createdAt": SERVER_TIMESTAMP,
+                "updatedAt": SERVER_TIMESTAMP
+            })
 
-                created += 1
-                page_created += 1
+            created += 1
 
-            except Conflict:
-                skipped += 1
+        except Conflict:
+            skipped += 1
+
+            doc_ref.set({
+                "id": ato_id,
+                "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
+                "date": None,
+                "createdAt": SERVER_TIMESTAMP,
+                "updatedAt": SERVER_TIMESTAMP
+            })
+
+            created += 1
+            page_created += 1
 
         print(
             f"Page {page}: "
-            f"created={page_created}, "
-            f"skipped={page_count - page_created}"
+            f"created={page_created}"
         )
 
         # Optional optimization:
-        # stop once an entire page is already imported
+        # stop when an entire page is already imported
         if page_created == 0:
             print(
                 "All records on this page already exist. Stopping."
@@ -798,7 +915,6 @@ def populate_archive(req):
 
         page += 1
 
-        # Last page
         if page_count < 100:
             break
 
