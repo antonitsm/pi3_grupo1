@@ -1,38 +1,70 @@
 import 'package:flutter/material.dart';
+
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
 import '../widgets/cardprojeto.dart';
-import '../mock/mock_data.dart';
 
-class PartidoIndividualPage extends StatelessWidget {
+import '../services/api_service.dart';
+
+class PartidoIndividualPage extends StatefulWidget {
   final Map<String, dynamic> partido;
 
-  const PartidoIndividualPage({
-    super.key,
-    required this.partido,
-  });
+  const PartidoIndividualPage({super.key, required this.partido});
 
   @override
-  Widget build(BuildContext context) {
-    final sigla = partido["sigla"] as String;
-    final nome = partido["nome"] as String;
-    final anoCriacao = partido["ano_criacao"] ?? "Não informado";
+  State<PartidoIndividualPage> createState() => _PartidoIndividualPageState();
+}
 
-    final vereadoresDoPartido = vereadoresMock
-        .where((v) => v["partido"] as String == sigla)
-        .toList();
+class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
+  final ApiService api = ApiService();
 
-    final nomesVereadores = vereadoresDoPartido
+  List<Map<String, dynamic>> vereadoresDoPartido = [];
+  List<Map<String, dynamic>> projetosDoPartido = [];
+
+  @override
+  void initState() {
+    super.initState();
+    carregarDados();
+  }
+
+  Future<void> carregarDados() async {
+    final vereadores = await api.getVereadores();
+    final projetos = await api.getProjetos();
+
+    final sigla = widget.partido["sigla"] as String;
+
+    final vereadoresFiltrados = List<Map<String, dynamic>>.from(
+      vereadores.where((v) => v["partido"] == sigla),
+    );
+
+    final nomesVereadores = vereadoresFiltrados
         .map((v) => v["nome"] as String)
         .toSet();
 
-    final projetosDoPartido = projetosMock
-        .where(
-          (p) => (p["autoria"] as List).any(
-            (autor) => nomesVereadores.contains(autor),
-          ),
-        )
-        .toList();
+    final projetosFiltrados = List<Map<String, dynamic>>.from(
+      projetos.where((p) {
+        final autores = (p["autoria"] as List?) ?? [];
+
+        return autores.any(
+          (autor) => nomesVereadores.contains(autor),
+        );
+      }),
+    );
+
+    setState(() {
+      vereadoresDoPartido = vereadoresFiltrados;
+      projetosDoPartido = projetosFiltrados;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sigla = widget.partido["sigla"] as String;
+
+    final nome = widget.partido["nome"] as String;
+
+    final anoCriacao =
+        widget.partido["ano_criacao"] ?? "Não informado";
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),

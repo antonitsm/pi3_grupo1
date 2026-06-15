@@ -1,19 +1,44 @@
 import 'package:flutter/material.dart';
 import '../widgets/rodape.dart';
-import '../mock/mock_data.dart';
+import '../services/api_service.dart';
 
-class VereadorIndividualPage extends StatelessWidget {
+class VereadorIndividualPage extends StatefulWidget {
   final Map<String, dynamic> vereador;
 
   const VereadorIndividualPage({super.key, required this.vereador});
 
   @override
+  State<VereadorIndividualPage> createState() => _VereadorIndividualPageState();
+}
+
+class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
+  final ApiService api = ApiService();
+
+  List<Map<String, dynamic>> projetosDoVereador = [];
+
+  @override
+  void initState() {
+    super.initState();
+    carregarProjetos();
+  }
+
+  Future<void> carregarProjetos() async {
+    final projetos = await api.getProjetos();
+
+    setState(() {
+      projetosDoVereador = List<Map<String, dynamic>>.from(
+        projetos.where((p) {
+          final autores = (p["autoria"] as List?) ?? [];
+
+          return autores.contains(widget.vereador["nome"]);
+        }),
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final projetosDoVereador = projetosMock
-        .where(
-          (p) => (p["autoria"] as List).contains(vereador["nome"] as String),
-        )
-        .toList();
+    final projetos = (widget.vereador["projetos"] as List?) ?? [];
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -25,7 +50,7 @@ class VereadorIndividualPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          vereador["nome"] as String,
+          widget.vereador["nome"] as String,
           style: const TextStyle(color: Colors.black),
         ),
       ),
@@ -40,11 +65,11 @@ class VereadorIndividualPage extends StatelessWidget {
             const SizedBox(height: 10),
 
             Text(
-              vereador["nome"] as String,
+              widget.vereador["nome"] as String,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
-            Text(vereador["partido"] as String),
+            Text(widget.vereador["partido"] as String),
 
             const SizedBox(height: 10),
 
@@ -62,9 +87,11 @@ class VereadorIndividualPage extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Text("${vereador["projetos_aprovados"]} projetos aprovados"),
                   Text(
-                    "${(vereador["projetos"] as List).length} projeto(s) vinculado(s)",
+                    "${widget.vereador["projetos_aprovados"]} projetos aprovados",
+                  ),
+                  Text(
+                    "${projetos.length} projeto(s) vinculado(s)",
                     style: const TextStyle(color: Colors.deepOrange),
                   ),
                 ],
@@ -80,10 +107,7 @@ class VereadorIndividualPage extends StatelessWidget {
 
             ...projetosDoVereador.map(
               (projeto) => Container(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 8,
-                ),
+                margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -130,5 +154,3 @@ class VereadorIndividualPage extends StatelessWidget {
     );
   }
 }
-
-

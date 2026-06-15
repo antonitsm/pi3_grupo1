@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'partido_individual.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
-import '../mock/mock_data.dart';
+
+import '../services/api_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,20 +30,45 @@ class PartidosPage extends StatefulWidget {
 }
 
 class _PartidosPageState extends State<PartidosPage> {
+  final ApiService api = ApiService();
+
+  List<Map<String, dynamic>> todosPartidos = [];
+  List<Map<String, dynamic>> todosVereadores = [];
+  List<Map<String, dynamic>> todosProjetos = [];
   List<Map<String, dynamic>> partidosFiltrados = [];
   String busca = "";
 
   @override
   void initState() {
     super.initState();
-    partidosFiltrados = List.from(partidosMock);
+    carregarPartidos();
   }
+
+  Future<void> carregarPartidos() async {
+  final partidos = await api.getPartidos();
+  final vereadores = await api.getVereadores();
+  final projetos = await api.getProjetos();
+
+  setState(() {
+    todosPartidos = List<Map<String, dynamic>>.from(partidos);
+
+    todosVereadores = List<Map<String, dynamic>>.from(
+      vereadores,
+    );
+
+    todosProjetos = List<Map<String, dynamic>>.from(
+      projetos,
+    );
+
+    partidosFiltrados = List.from(todosPartidos);
+  });
+}
 
   void filtrarPartidos(String texto) {
     setState(() {
       busca = texto.toLowerCase();
 
-      partidosFiltrados = partidosMock.where((partido) {
+      partidosFiltrados = todosPartidos.where((partido) {
         final nome = partido["nome"].toString().toLowerCase();
 
         final sigla = partido["sigla"].toString().toLowerCase();
@@ -181,7 +208,29 @@ class _PartidosPageState extends State<PartidosPage> {
               itemBuilder: (context, index) {
                 final partido = partidosFiltrados[index];
 
-                return PartidoCard(partido: partido);
+                final sigla = partido["sigla"];
+
+                final vereadoresDoPartido = todosVereadores
+                    .where((v) => v["partido"] == sigla)
+                    .toList();
+
+                final nomesVereadores = vereadoresDoPartido
+                    .map((v) => v["nome"] as String)
+                    .toSet();
+
+                final projetosDoPartido = todosProjetos.where((p) {
+                  final autores = (p["autoria"] as List?) ?? [];
+
+                  return autores.any(
+                    (autor) => nomesVereadores.contains(autor),
+                  );
+                }).toList();
+
+                return PartidoCard(
+                  partido: partido,
+                  quantidadeProjetos: projetosDoPartido.length,
+                  quantidadeVereadores: vereadoresDoPartido.length,
+                );
               },
             ),
           ),
@@ -197,27 +246,18 @@ class _PartidosPageState extends State<PartidosPage> {
 // CARD
 class PartidoCard extends StatelessWidget {
   final Map<String, dynamic> partido;
+  final int quantidadeProjetos;
+  final int quantidadeVereadores;
 
-  const PartidoCard({super.key, required this.partido});
+  const PartidoCard({
+    super.key,
+    required this.partido,
+    required this.quantidadeProjetos,
+    required this.quantidadeVereadores,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final sigla = partido["sigla"] as String;
-
-    final vereadoresDoPartido = vereadoresMock
-        .where((v) => v["partido"] == sigla)
-        .toList();
-
-    final nomesVereadores = vereadoresDoPartido
-        .map((v) => v["nome"] as String)
-        .toSet();
-
-    final projetosDoPartido = projetosMock.where((p) {
-      final autores = (p["autoria"] as List?) ?? [];
-
-      return autores.any((autor) => nomesVereadores.contains(autor));
-    }).toList();
-
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -235,7 +275,6 @@ class PartidoCard extends StatelessWidget {
 
         decoration: BoxDecoration(
           color: Colors.grey[300],
-
           borderRadius: BorderRadius.circular(16),
 
           boxShadow: const [
@@ -249,7 +288,6 @@ class PartidoCard extends StatelessWidget {
 
         child: Row(
           children: [
-            // LOGO
             Container(
               width: 60,
               height: 60,
@@ -275,15 +313,15 @@ class PartidoCard extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
 
                   Text(partido["nome"]),
 
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
                   Text(
-                    "${projetosDoPartido.length} projetos • "
-                    "${vereadoresDoPartido.length} vereadores",
+                    "$quantidadeProjetos projetos • "
+                    "$quantidadeVereadores vereadores",
                   ),
                 ],
               ),

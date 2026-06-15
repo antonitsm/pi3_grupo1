@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../mock/mock_data.dart';
 import '../widgets/projeto_detalhe.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
+
+import '../services/api_service.dart';
 
 class ProjetosPage extends StatefulWidget {
   const ProjetosPage({super.key});
@@ -13,9 +14,14 @@ class ProjetosPage extends StatefulWidget {
 }
 
 class _ProjetosPageState extends State<ProjetosPage> {
+  final ApiService api = ApiService();
+
   late List<bool> liked;
   late List<bool> disliked;
+
+  List<Map<String, dynamic>> todosProjetos = [];
   List<Map<String, dynamic>> projetosFiltrados = [];
+
   String busca = "";
 
   String tagSelecionada = 'Todos';
@@ -26,15 +32,25 @@ class _ProjetosPageState extends State<ProjetosPage> {
   void initState() {
     super.initState();
 
-    liked = List.generate(projetosMock.length, (_) => false);
-    disliked = List.generate(projetosMock.length, (_) => false);
+    carregarProjetos();
+  }
 
-    projetosFiltrados = List.from(projetosMock);
+  Future<void> carregarProjetos() async {
+    final projetos = await api.getProjetos();
+
+    setState(() {
+      todosProjetos = List<Map<String, dynamic>>.from(projetos);
+
+      projetosFiltrados = List.from(todosProjetos);
+
+      liked = List.generate(todosProjetos.length, (_) => false);
+      disliked = List.generate(todosProjetos.length, (_) => false);
+    });
   }
 
   void aplicarFiltro() {
     setState(() {
-      projetosFiltrados = projetosMock.where((projeto) {
+      projetosFiltrados = todosProjetos.where((projeto) {
         if (tagSelecionada == 'Todos') {
           return true;
         }
@@ -48,7 +64,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
     setState(() {
       busca = texto.toLowerCase();
 
-      projetosFiltrados = projetosMock.where((projeto) {
+      projetosFiltrados = todosProjetos.where((projeto) {
         final titulo = projeto["titulo"].toString().toLowerCase();
 
         final descricao = projeto["ideia_central"].toString().toLowerCase();

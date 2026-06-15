@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
-import '../mock/mock_data.dart';
+
+import '../services/api_service.dart';
+
 import 'vereador_individual.dart';
  
 class VereadoresPage extends StatefulWidget {
@@ -12,19 +15,32 @@ class VereadoresPage extends StatefulWidget {
 }
  
 class _VereadoresPageState extends State<VereadoresPage> {
+  final ApiService api = ApiService();
+
+  List<Map<String, dynamic>> todosVereadores = [];
   List<Map<String, dynamic>> vereadoresFiltrados = [];
+
   String busca = '';
  
   @override
   void initState() {
     super.initState();
-    vereadoresFiltrados = List.from(vereadoresMock);
+    carregarVereadores();
+  }
+
+  Future<void> carregarVereadores() async {
+    final vereadores = await api.getVereadores();
+
+    setState(() {
+      todosVereadores = List<Map<String, dynamic>>.from(vereadores);
+      vereadoresFiltrados = List.from(todosVereadores);
+    });
   }
  
   void filtrarVereadores(String texto) {
     setState(() {
       busca = texto.toLowerCase();
-      vereadoresFiltrados = vereadoresMock.where((v) {
+      vereadoresFiltrados = todosVereadores.where((v) {
         final nome = (v['nome'] as String).toLowerCase();
         final partido = (v['partido'] as String).toLowerCase();
         return nome.contains(busca) || partido.contains(busca);
