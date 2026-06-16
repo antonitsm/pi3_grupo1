@@ -256,9 +256,9 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
             const SizedBox(height: 16),
 
             SizedBox(
-              height: 200,
+              height: 280,
               child: PageView.builder(
-                controller: PageController(viewportFraction: 0.9),
+                controller: PageController(viewportFraction: 0.85),
                 itemCount: projetosDoPartido.length,
                 itemBuilder: (context, index) {
                   final projeto = projetosDoPartido[index];

@@ -45,6 +45,7 @@ class _CardProjetoState extends State<CardProjeto> {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
