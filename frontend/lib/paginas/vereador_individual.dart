@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
 import '../services/api_service.dart';
 
@@ -43,15 +44,23 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.vereador["nome"] as String,
-          style: const TextStyle(color: Colors.black),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(50),
+        child: Stack(
+          children: [
+            const BarraSuperior(),
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 0,
+              child: SafeArea(
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
 
