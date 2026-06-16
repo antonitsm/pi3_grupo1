@@ -1,3 +1,4 @@
+import '../widgets/cardprojeto.dart';
 import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
@@ -115,45 +116,14 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
             ),
 
             ...projetosDoVereador.map(
-              (projeto) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
+              (projeto) => Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 8,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      projeto["titulo"] as String,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      "Resumo IA: ${projeto["ideia_central"] as String}",
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Data: ${projeto["data_publicacao"] as String}"),
-                        const Row(
-                          children: [
-                            Icon(Icons.thumb_up, color: Colors.green),
-                            SizedBox(width: 10),
-                            Icon(Icons.thumb_down, color: Colors.red),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                child: CardProjeto(projeto: projeto),
               ),
             ),
-
             const SizedBox(height: 20),
           ],
         ),
