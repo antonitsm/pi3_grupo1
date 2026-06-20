@@ -4,10 +4,7 @@ import 'projeto_detalhe.dart';
 class CardProjeto extends StatefulWidget {
   final Map<String, dynamic> projeto;
 
-  const CardProjeto({
-    super.key,
-    required this.projeto,
-  });
+  const CardProjeto({super.key, required this.projeto});
 
   @override
   State<CardProjeto> createState() => _CardProjetoState();
@@ -19,14 +16,14 @@ class _CardProjetoState extends State<CardProjeto> {
 
   @override
   Widget build(BuildContext context) {
+    final tags = (widget.projeto["tags"] as List?) ?? [];
+    
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ProjetoDetalhePage(
-              projeto: widget.projeto,
-            ),
+            builder: (_) => ProjetoDetalhePage(projeto: widget.projeto),
           ),
         );
       },
@@ -50,9 +47,7 @@ class _CardProjetoState extends State<CardProjeto> {
           children: [
             Text(
               widget.projeto["titulo"],
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
 
             const SizedBox(height: 6),
@@ -67,10 +62,10 @@ class _CardProjetoState extends State<CardProjeto> {
 
             Wrap(
               spacing: 6,
-              children: (widget.projeto["tags"] as List)
+              children: tags
                   .map(
                     (tag) => Chip(
-                      label: Text(tag),
+                      label: Text(tag.toString()),
                       backgroundColor: const Color(0xFFF67F57),
                     ),
                   )
@@ -133,11 +128,7 @@ class _CardProjetoState extends State<CardProjeto> {
         color: color,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
-        icon,
-        color: Colors.white,
-        size: 18,
-      ),
+      child: Icon(icon, color: Colors.white, size: 18),
     );
   }
 }

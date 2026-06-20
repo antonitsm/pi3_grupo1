@@ -1,20 +1,47 @@
 import 'package:flutter/material.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
-import '../mock/mock_data.dart';
+import '../services/api_service.dart';
 
-class ProjetoDetalhePage extends StatelessWidget {
+class ProjetoDetalhePage extends StatefulWidget {
   final Map<String, dynamic> projeto;
 
   const ProjetoDetalhePage({super.key, required this.projeto});
 
   @override
+  State<ProjetoDetalhePage> createState() => _ProjetoDetalhePageState();
+}
+
+class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
+  final ApiService api = ApiService();
+
+  List<Map<String, dynamic>> vereadoresProjeto = [];
+
+  @override
+  void initState() {
+    super.initState();
+    carregarVereadores();
+  }
+
+  Future<void> carregarVereadores() async {
+  final vereadores = await api.getVereadores();
+
+  final vereadoresFiltrados =
+      List<Map<String, dynamic>>.from(
+    vereadores.where(
+      (vereador) =>
+          (widget.projeto["autoria"] as List)
+              .contains(vereador["nome"]),
+    ),
+  );
+
+  setState(() {
+    vereadoresProjeto = vereadoresFiltrados;
+  });
+}
+
+  @override
   Widget build(BuildContext context) {
-    final vereadoresProjeto = vereadoresMock
-        .where(
-          (vereador) => (projeto["autoria"] as List).contains(vereador["nome"]),
-        )
-        .toList();
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       bottomNavigationBar: const Rodape(paginaAtual: 0),
@@ -36,7 +63,7 @@ class ProjetoDetalhePage extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 Text(
-                  projeto["titulo"],
+                  widget.projeto["titulo"],
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -44,7 +71,7 @@ class ProjetoDetalhePage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 5),
-                Text("Publicação: ${projeto["data_publicacao"]}"),
+                Text("Publicação: ${widget.projeto["data_publicacao"]}"),
 
                 const SizedBox(height: 20),
 
@@ -73,30 +100,30 @@ class ProjetoDetalhePage extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      Text("🎯 Objetivo\n${projeto["ideia_central"]}"),
+                      Text("🎯 Objetivo\n${widget.projeto["ideia_central"]}"),
 
                       const SizedBox(height: 10),
 
                       Text(
-                        "📍 Localidades afetadas\n${projeto["localidades_afetadas"]}",
+                        "📍 Localidades afetadas\n${widget.projeto["localidades_afetadas"]}",
                       ),
 
                       const SizedBox(height: 10),
 
                       Text(
-                        "📅 Quando será executado\n${projeto["quando_sera_executado"]}",
+                        "📅 Quando será executado\n${widget.projeto["quando_sera_executado"]}",
                       ),
 
                       const SizedBox(height: 10),
 
                       Text(
-                        "⚙️ Como será executado\n${projeto["como_sera_executado"]}",
+                        "⚙️ Como será executado\n${widget.projeto["como_sera_executado"]}",
                       ),
 
                       const SizedBox(height: 10),
 
                       Text(
-                        "👤 Autoria\n${(projeto["autoria"] as List).join(", ")}",
+                        "👤 Autoria\n${(widget.projeto["autoria"] as List).join(", ")}",
                       ),
 
                       const SizedBox(height: 15),
@@ -115,7 +142,7 @@ class ProjetoDetalhePage extends StatelessWidget {
 
                           children: [
                             Text(
-                              "Relevância: ${projeto["relevancia"]}",
+                              "Relevância: ${widget.projeto["relevancia"]}",
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -125,7 +152,7 @@ class ProjetoDetalhePage extends StatelessWidget {
                             const SizedBox(height: 5),
 
                             Text(
-                              projeto["justificativa_relevancia"],
+                              widget.projeto["justificativa_relevancia"],
                               style: const TextStyle(color: Colors.white),
                             ),
                           ],
@@ -149,7 +176,7 @@ class ProjetoDetalhePage extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      print(projeto["texto_original"]);
+                      print(widget.projeto["textoOriginalUrl"]);
                     },
                     child: const Text(
                       "Acesse na íntegra aqui!",
