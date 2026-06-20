@@ -28,34 +28,20 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
   }
 
   Future<void> carregarDados() async {
-    final vereadores = await api.getVereadores();
-    final projetos = await api.getProjetos();
+  final partidoId = widget.partido["id"];
 
-    final sigla = widget.partido["sigla"] as String;
+  final vereadores = await api.getPartidoVereadores(partidoId);
 
-    final vereadoresFiltrados = List<Map<String, dynamic>>.from(
-      vereadores.where((v) => v["partido"] == sigla),
-    );
+  final projetos = await api.getPartidoProjetos(partidoId);
 
-    final nomesVereadores = vereadoresFiltrados
-        .map((v) => v["nome"] as String)
-        .toSet();
+  setState(() {
+    vereadoresDoPartido =
+        List<Map<String, dynamic>>.from(vereadores);
 
-    final projetosFiltrados = List<Map<String, dynamic>>.from(
-      projetos.where((p) {
-        final autores = (p["autoria"] as List?) ?? [];
-
-        return autores.any(
-          (autor) => nomesVereadores.contains(autor),
-        );
-      }),
-    );
-
-    setState(() {
-      vereadoresDoPartido = vereadoresFiltrados;
-      projetosDoPartido = projetosFiltrados;
-    });
-  }
+    projetosDoPartido =
+        List<Map<String, dynamic>>.from(projetos);
+  });
+}
 
   @override
   Widget build(BuildContext context) {

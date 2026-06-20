@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:frontend/mock/mock_data.dart';
 
 class ApiService {
-  static const String baseUrl =
-      "http://10.0.2.2:5001/transparencia-municipal-4e915/us-central1";
 
   Future<List<dynamic>> getProjetos() async {
-    final response =
-        await http.get(Uri.parse("$baseUrl/projetos"));
+    final response = await http.get(
+      Uri.parse(
+        "https://projetos-ht6dkigglq-uc.a.run.app",
+      ),
+    );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -18,8 +18,11 @@ class ApiService {
   }
 
   Future<List<dynamic>> getVereadores() async {
-    final response =
-        await http.get(Uri.parse("$baseUrl/vereadores"));
+    final response = await http.get(
+      Uri.parse(
+        "https://vereadores-ht6dkigglq-uc.a.run.app",
+      ),
+    );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -29,13 +32,44 @@ class ApiService {
   }
 
   Future<List<dynamic>> getPartidos() async {
-    final response =
-        await http.get(Uri.parse("$baseUrl/partidos"));
+    final response = await http.get(
+      Uri.parse(
+        "https://partidos-ht6dkigglq-uc.a.run.app",
+      ),
+    );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
 
     throw Exception("Erro ao carregar partidos");
+  }
+
+  Future<List<dynamic>> getPartidoVereadores(String partidoId) async {
+    final response = await http.get(
+      Uri.parse(
+        "https://partido-vereadores-ht6dkigglq-uc.a.run.app?id=$partidoId",
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Erro ao carregar vereadores do partido");
+  }
+
+  Future<List<dynamic>> getPartidoProjetos(String partidoId) async {
+    final response = await http.get(
+      Uri.parse(
+        "https://partido-projetos-ht6dkigglq-uc.a.run.app?id=$partidoId",
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Erro ao carregar projetos do partido");
   }
 }
