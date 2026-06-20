@@ -11,12 +11,17 @@ import requests
 import random
 import json
 import re
+import os
+import base64
 
 set_global_options(max_instances=10)
 
 initialize_app()
 
 db = firestore.client()
+
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+#GOOGLE_API_KEY = ""
 
 
 # =====================
@@ -27,9 +32,9 @@ db = firestore.client()
 # POST /projetos
 # GET /projetos
 # ==================================================
+
 """
-Create a new project (POST) or return a list of all
-projects stored in Firestore (GET).
+Cria um novo projeto (POST) ou retorna todos os projetos cadastrados (GET).
 """
 @https_fn.on_request()
 def projetos(req):
@@ -84,8 +89,9 @@ def projetos(req):
 # PATCH /projeto?id=<project_id>
 # DELETE /projeto?id=<project_id>
 # ==================================================
+
 """
-Manage a single project.
+Gerencia um projeto específico.
 """
 @https_fn.on_request()
 def projeto(req):
@@ -188,9 +194,9 @@ def projeto(req):
 # GET /vereadores
 # POST /vereadores
 # ==================================================
+
 """
-Create a new council member (POST) or return a list
-of all council members stored in Firestore (GET).
+Cria um novo vereador (POST) ou retorna todos os vereadores cadastrados (GET).
 """
 @https_fn.on_request()
 def vereadores(req):
@@ -252,8 +258,9 @@ def vereadores(req):
 # PATCH /vereador?id=<vereador_id>
 # DELETE /vereador?id=<vereador_id>
 # ==================================================
+
 """
-Manage a single council member.
+Gerencia um vereador específico.
 """
 @https_fn.on_request()
 def vereador(req):
@@ -354,9 +361,9 @@ def vereador(req):
 # GET /partidos
 # POST /partidos
 # ==================================================
+
 """
-Create a new political party (POST) or return a list
-of all political parties (GET).
+Cria um novo partido (POST) ou retorna todos os partidos cadastrados (GET).
 """
 @https_fn.on_request()
 def partidos(req):
@@ -417,8 +424,9 @@ def partidos(req):
 # PATCH /partido?id=<partido_id>
 # DELETE /partido?id=<partido_id>
 # ==================================================
+
 """
-Manage a single political party.
+Gerencia um partido específico.
 """
 @https_fn.on_request()
 def partido(req):
@@ -512,14 +520,15 @@ def partido(req):
 
 
 # =====================
-# OUTRAS QUERIES
+# CONSULTAS RELACIONADAS
 # =====================
 
 # ==================================================
 # GET /partido_vereadores?id=<partido_id>
 # ==================================================
+
 """
-Returns all council members belonging to a party.
+Retorna todos os vereadores que pertencem a um partido.
 """
 @https_fn.on_request()
 def partido_vereadores(req):
@@ -563,9 +572,9 @@ def partido_vereadores(req):
 # ==================================================
 # GET /partido_projetos?id=<partido_id>
 # ==================================================
+
 """
-Returns all projects authored by council members
-associated with the given party.
+Retorna todos os projetos criados por vereadores de um partido.
 """
 @https_fn.on_request()
 def partido_projetos(req):
@@ -628,14 +637,15 @@ def partido_projetos(req):
 
 
 # =====================
-# MOCKS
+# DADOS DE TESTE
 # =====================
 
 # ==================================================
 # POST /mock_projeto
 # ==================================================
+
 """
-Creates a randomly generated test project.
+Cria um projeto fictício para testes.
 """
 @https_fn.on_request()
 def mock_projeto(req):
@@ -684,8 +694,9 @@ def mock_projeto(req):
 # ==================================================
 # POST /mock_vereador
 # ==================================================
+
 """
-Creates a randomly generated test council member.
+Cria um vereador fictício para testes.
 """
 @https_fn.on_request()
 def mock_vereador(req):
@@ -728,8 +739,9 @@ def mock_vereador(req):
 # ==================================================
 # POST /mock_partido
 # ==================================================
+
 """
-Creates a randomly generated political party.
+Cria um partido fictício para testes.
 """
 @https_fn.on_request()
 def mock_partido(req):
@@ -770,17 +782,15 @@ def mock_partido(req):
     )
 
 # =====================
-# PROCESSAR
+# PROCESSAMENTO DE ARQUIVOS
 # =====================
 
 # ==================================================
 # GET /archive
 # ==================================================
-"""
-Returns all archive records currently stored.
 
-Archive records represent municipal acts collected
-from the Diário Municipal.
+"""
+Retorna todos os registros da coleção archive.
 """
 @https_fn.on_request()
 def archive(req):
@@ -802,15 +812,15 @@ def archive(req):
 # ==================================================
 # POST /populate_archive
 # ==================================================
-"""
-Imports municipal act references from the Diário Municipal
-into the archive collection.
 
-The function:
-    1. Crawls the Diário Municipal pages.
-    2. Extracts act IDs.
-    3. Stores new archive records.
-    4. Skips existing records.
+"""
+Importa atos municipais do Diário Municipal para a coleção archive.
+
+Fluxo:
+1. Acessa as páginas do Diário Municipal.
+2. Coleta os IDs dos atos.
+3. Salva novos registros.
+4. Ignora registros já existentes.
 """
 @https_fn.on_request()
 def populate_archive(req):
@@ -854,7 +864,7 @@ def populate_archive(req):
 
         ids = set(
             re.findall(
-                r'/atos/(\d+)',
+                r"/atos/(\d+)",
                 response.text
             )
         )
@@ -863,11 +873,8 @@ def populate_archive(req):
 
         print(f"Found {page_count} acts")
 
-        # No results = end of pagination
         if page_count == 0:
             break
-
-        page_created = 0
 
         for ato_id in ids:
             doc_ref = (
@@ -875,46 +882,23 @@ def populate_archive(req):
                 .document(ato_id)
             )
 
-        try:
-            doc_ref.create({
-                "id": ato_id,
-                "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
-                "date": None,
-                "createdAt": SERVER_TIMESTAMP,
-                "updatedAt": SERVER_TIMESTAMP
-            })
+            try:
+                doc_ref.create({
+                    "id": ato_id,
+                    "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
+                    "date": None,
+                    "createdAt": SERVER_TIMESTAMP,
+                    "updatedAt": SERVER_TIMESTAMP
+                })
 
-            created += 1
+                created += 1
 
-        except Conflict:
-            skipped += 1
-
-            doc_ref.set({
-                "id": ato_id,
-                "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
-                "date": None,
-                "createdAt": SERVER_TIMESTAMP,
-                "updatedAt": SERVER_TIMESTAMP
-            })
-
-            created += 1
-            page_created += 1
-
-        print(
-            f"Page {page}: "
-            f"created={page_created}"
-        )
-
-        # Optional optimization:
-        # stop when an entire page is already imported
-        if page_created == 0:
-            print(
-                "All records on this page already exist. Stopping."
-            )
-            break
+            except Conflict:
+                skipped += 1
 
         page += 1
 
+        # Last page
         if page_count < 100:
             break
 
@@ -923,17 +907,46 @@ def populate_archive(req):
             "success": True,
             "created": created,
             "skipped": skipped,
-            "pages_processed": page
+            "pages_processed": page - 1
         }),
+        content_type="application/json"
+    )
+
+# ==================================================
+# GET /archives_pending
+# ==================================================
+
+"""
+Retorna todos os registros que ainda não foram processados.
+"""
+@https_fn.on_request()
+def archives_pending(req):
+    docs = db.collection("archive").stream()
+
+    data = [
+        {
+            "id": doc.id,
+            **doc.to_dict()
+        }
+        for doc in docs
+        if doc.to_dict().get("processed") != True
+    ]
+
+    return https_fn.Response(
+        json.dumps(data, default=str),
         content_type="application/json"
     )
 
 # ==================================================
 # POST /process_archive?id=<archive_id>
 # ==================================================
+
 """
-Processes a specific archive record.
-TODO: integrate AI.
+Processa um registro específico da coleção archive.
+"""
+"""
+Lê o PDF do ato municipal, usa IA para extrair informações
+e cria um novo projeto automaticamente.
 """
 @https_fn.on_request()
 def process_archive(req):
@@ -966,27 +979,22 @@ def process_archive(req):
     try:
         archive_data = doc.to_dict()
 
-        # TODO:
-        # Put your requests + AI processing here
-        if True:
+        projeto_id = extract_project_with_ai(
+            archive_id,
+            archive_data
+        )
 
-            doc_ref.update({
-                "date": SERVER_TIMESTAMP,
-                "updatedAt": SERVER_TIMESTAMP
-            })
-
-            return https_fn.Response(
-                json.dumps({
-                    "success": True,
-                    "id": archive_id
-                }),
-                content_type="application/json"
-            )
+        doc_ref.update({
+            "processed": True,
+            "projetoId": projeto_id,
+            "updatedAt": SERVER_TIMESTAMP
+        })
 
         return https_fn.Response(
             json.dumps({
-                "success": False,
-                "id": archive_id
+                "success": True,
+                "archiveId": archive_id,
+                "projetoId": projeto_id
             }),
             content_type="application/json"
         )
@@ -999,3 +1007,85 @@ def process_archive(req):
             status=500,
             content_type="application/json"
         )
+
+def extract_project_with_ai(archive_id, archive_data):
+    response = requests.get(
+        archive_data["url"],
+        timeout=30,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
+    response.raise_for_status()
+
+    pdf_urls = re.findall(
+        r'https://[^"\'> ]+\.pdf',
+        response.text
+    )
+
+    original_pdf = next(
+        (url for url in pdf_urls if "_extrato" not in url),
+        None
+    )
+
+    if not original_pdf:
+        raise Exception("PDF original não encontrado")
+
+    pdf_response = requests.get(original_pdf, timeout=30)
+    pdf_response.raise_for_status()
+
+    pdf_base64 = base64.b64encode(pdf_response.content).decode("utf-8")
+
+    payload = {
+        "contents": [{
+            "parts": [
+                {
+                    "inline_data": {
+                        "mime_type": "application/pdf",
+                        "data": pdf_base64
+                    }
+                },
+                {
+                    "text": """
+                    Analyze this municipal act.
+
+                    Return ONLY JSON:
+                    {
+                      "titulo": "",
+                      "ideia_central": "",
+                      "localidades_afetadas": "",
+                      "status": "",
+                      "tags": []
+                    }
+                    """
+                }
+            ]
+        }]
+    }
+
+    ai_response = requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={GOOGLE_API_KEY}",
+        json=payload,
+        timeout=60
+    )
+
+    ai_response.raise_for_status()
+
+    result = ai_response.json()
+
+    if not result.get("candidates"):
+        raise Exception("Gemini retornou resposta vazia")
+
+    text = result["candidates"][0]["content"]["parts"][0]["text"]
+
+    # remove markdown fences if Gemini adds them
+    text = text.replace("```json", "").replace("```", "").strip()
+
+    projeto_data = json.loads(text)
+
+    projeto_data["archiveId"] = archive_id
+    projeto_data["createdAt"] = SERVER_TIMESTAMP
+    projeto_data["updatedAt"] = SERVER_TIMESTAMP
+
+    projeto_ref = db.collection("projetos").document()
+    projeto_ref.set(projeto_data)
+
+    return projeto_ref.id
