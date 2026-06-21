@@ -12,9 +12,6 @@ npx firebase-tools init functions
 {selecione "overwrite", "python", "don't overwrite files", "install dependencies"}
 
 
-
-
-
 # CHAVE DA IA (ou coloca direto no codigo)
 
 {https://console.cloud.google.com/apis/credentials}
@@ -27,15 +24,8 @@ export GOOGLE_API_KEY=""
 $env:GOOGLE_API_KEY=""
 
 
-
-
-
-
 # RODAR PRA TESTE OU SUBIR NA NUVEM
 
 npx firebase-tools emulators:start
 or
 npx firebase-tools deploy --only functions
-
-
-
