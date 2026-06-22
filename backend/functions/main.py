@@ -129,46 +129,168 @@ def projetos_mock_full(req):
 
     if req.method == "POST":
 
-        tags_pool = ["teste", "urbano", "saúde", "educação", "infra", "digital"]
+        tags_pool = [
+            "teste",
+            "urbano",
+            "saúde",
+            "educação",
+            "infra",
+            "digital"
+        ]
 
+        # =====================
+        # AUTORIA (VEREADORES + PARTIDOS)
+        # =====================
+        vereadores_docs = list(
+            db.collection("vereadores").stream()
+        )
+
+        autoria = []
+        autoria_ids = []
+
+        if vereadores_docs:
+
+            quantidade = min(
+                random.randint(1, 3),
+                len(vereadores_docs)
+            )
+
+            escolhidos = random.sample(
+                vereadores_docs,
+                k=quantidade
+            )
+
+            for v in escolhidos:
+                dados = v.to_dict()
+
+                autoria.append({
+                    "id": v.id,
+                    "nome": dados.get(
+                        "nome",
+                        "Vereador Desconhecido"
+                    ),
+                    "partido": dados.get(
+                        "partido",
+                        "Sem Partido"
+                    )
+                })
+
+                autoria_ids.append(v.id)
+
+        else:
+            partidos_mock = [
+                "PL",
+                "PT",
+                "MDB",
+                "PSD",
+                "PP",
+                "UNIÃO"
+            ]
+
+            autoria.append({
+                "id": "mock-1",
+                "nome": "Vereador Exemplo",
+                "partido": random.choice(
+                    partidos_mock
+                )
+            })
+
+            autoria_ids.append("mock-1")
+
+        # =====================
+        # PROJETO
+        # =====================
         projeto = {
-            "titulo": f"Projeto {random.randint(1, 1000)}",
-            "tags": random.sample(tags_pool, k=1),
-            "quando_sera_executado": str(random.randint(2026, 2030)),
-            "createdAt": str(datetime.utcnow()),
-            "updatedAt": str(datetime.utcnow()),
+            "titulo":
+                f"Projeto {random.randint(1, 1000)}",
 
-            "localidades_afetadas": random.choice([
-                "Todo o município",
-                "Zona urbana",
-                "Zona rural",
-                "Centro"
-            ]),
+            "tags":
+                random.sample(tags_pool, k=1),
 
-            "data_publicacao": f"2026-06-{random.randint(1,28):02d}",
+            "quando_sera_executado":
+                str(random.randint(2026, 2030)),
 
-            "como_sera_executado": "Execução automática para testes",
-            "relevancia": random.choice(["Alta", "Média", "Baixa"]),
-            "autoria": [],
+            "createdAt":
+                str(datetime.utcnow()),
 
-            "ideia_central": "Ideia central gerada automaticamente",
-            "likes": random.randint(0, 500),
-            "dislikes": random.randint(0, 100),
+            "updatedAt":
+                str(datetime.utcnow()),
 
-            "justificativa_relevancia": "Projeto relevante para a população",
-            "textoOriginalUrl": "https://example.com/projeto",
-            "status": random.choice(["Em discussão", "Aprovado", "Em análise"])
+            "localidades_afetadas":
+                random.choice([
+                    "Todo o município",
+                    "Zona urbana",
+                    "Zona rural",
+                    "Centro"
+                ]),
+
+            "data_publicacao":
+                f"2026-06-{random.randint(1,28):02d}",
+
+            "como_sera_executado":
+                "Execução automática para testes",
+
+            "relevancia":
+                random.choice([
+                    "Alta",
+                    "Média",
+                    "Baixa"
+                ]),
+
+            "autoria":
+                autoria,
+
+            "autoriaIds":
+                autoria_ids,
+
+            "ideia_central":
+                "Ideia central gerada automaticamente",
+
+            "likes":
+                random.randint(0, 500),
+
+            "dislikes":
+                random.randint(0, 100),
+
+            "justificativa_relevancia":
+                "Projeto relevante para a população",
+
+            "textoOriginalUrl":
+                "https://example.com/projeto",
+
+            "status":
+                random.choice([
+                    "Em discussão",
+                    "Aprovado",
+                    "Em análise"
+                ])
         }
 
-        doc_ref = db.collection("projetos").document()
+        doc_ref = db.collection(
+            "projetos"
+        ).document()
+
         doc_ref.set(projeto)
 
-        return cors_response(json.dumps({
-            "id": doc_ref.id,
-            **projeto
-        }, default=str))
+        return cors_response(
+            json.dumps(
+                {
+                    "id": doc_ref.id,
+                    **projeto
+                },
+                default=str
+            )
+        )
 
-    return cors_response(json.dumps({"error": "Method not allowed"}), status=405)
+    return cors_response(
+        json.dumps(
+            {
+                "error":
+                    "Method not allowed"
+            }
+        ),
+        status=405
+    )
 
 
 # =====================
