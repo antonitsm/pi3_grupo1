@@ -430,3 +430,144 @@ def partido_projetos(req):
             result.append({"id": p.id, **data})
 
     return cors_response(json.dumps(result, default=str))
+
+
+
+# =====================
+# POST PARTIDOS E VEREADORES
+# =====================
+
+
+@https_fn.on_request()
+def criar_dados_iniciais(req):
+    db = get_db()
+
+    if req.method != "POST":
+        return https_fn.Response(
+            "Método não permitido",
+            status=405
+        )
+
+    # Partidos
+    pt_ref = db.collection("partidos").document()
+    pt_ref.set({
+        "nome": "Partido dos Trabalhadores",
+        "sigla": "PT"
+    })
+
+    pl_ref = db.collection("partidos").document()
+    pl_ref.set({
+        "nome": "Partido Liberal",
+        "sigla": "PL"
+    })
+
+    # Vereadores
+    db.collection("vereadores").document().set({
+        "nome": "João Silva",
+        "partido": "PT",
+        "partidoId": pt_ref.id
+    })
+
+    db.collection("vereadores").document().set({
+        "nome": "Maria Souza",
+        "partido": "PL",
+        "partidoId": pl_ref.id
+    })
+
+    return https_fn.Response(
+        json.dumps({
+            "message": "Dados criados com sucesso"
+        }),
+        content_type="application/json"
+    )
+
+
+
+
+
+
+# =====================
+# VINCULAR AUTORIAS
+# =====================
+@https_fn.on_request()
+def vincular_autorias(req):
+    db = get_db()
+
+    if req.method == "OPTIONS":
+        return options_response()
+
+    if req.method != "POST":
+        return cors_response(
+            json.dumps({
+                "error": "Método não permitido"
+            }),
+            status=405
+        )
+
+    vereadores = db.collection("vereadores").stream()
+
+    mapa_vereadores = {}
+
+    for vereador in vereadores:
+        dados = vereador.to_dict()
+
+        nome = (
+            dados.get("nome", "")
+            .strip()
+            .lower()
+        )
+
+        mapa_vereadores[nome] = vereador.id
+
+    projetos = db.collection("projetos").stream()
+
+    atualizados = 0
+
+    for projeto in projetos:
+        dados = projeto.to_dict()
+
+        autores = dados.get("autoria", [])
+
+        autoria_ids = []
+
+        for autor in autores:
+
+            # autoria é um objeto
+            if isinstance(autor, dict):
+                nome_autor = (
+                    autor.get("nome", "")
+                    .strip()
+                    .lower()
+                )
+
+            # caso existam projetos antigos
+            else:
+                nome_autor = (
+                    str(autor)
+                    .strip()
+                    .lower()
+                )
+
+            vereador_id = mapa_vereadores.get(
+                nome_autor
+            )
+
+            if vereador_id:
+                autoria_ids.append(
+                    vereador_id
+                )
+
+        projeto.reference.update({
+            "autoriaIds": autoria_ids
+        })
+
+        atualizados += 1
+
+    return cors_response(
+        json.dumps({
+            "message":
+                "Autorias vinculadas com sucesso",
+            "projetosAtualizados":
+                atualizados
+        })
+    )

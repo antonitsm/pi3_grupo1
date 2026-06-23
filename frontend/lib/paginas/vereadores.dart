@@ -90,7 +90,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
                                 setState(() {
                                   vereadoresFiltrados.sort(
                                     (a, b) =>
-                                        (b['projetos'] as List).length.compareTo(
+                                        ((b['projetos'] ?? []) as List).length.compareTo(
                                               (a['projetos'] as List).length,
                                             ),
                                   );
@@ -105,7 +105,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
                                   vereadoresFiltrados.sort(
                                     (a, b) =>
                                         (a['projetos'] as List).length.compareTo(
-                                              (b['projetos'] as List).length,
+                                              ((b['projetos'] ?? []) as List).length,
                                             ),
                                   );
                                 });
@@ -184,29 +184,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
                     ),
                     child: Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: (vereador["foto"] as String).isNotEmpty
-                              ? Image.network(
-                                  vereador["foto"] as String,
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFC33505),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(width: 12),
+
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,7 +200,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
                               Text(vereador["partido"] as String),
                               const SizedBox(height: 8),
                               Text(
-                                "${(vereador["projetos"] as List).length} projetos",
+                                "${(vereador["projetos"] ?? [ ]).length} projetos",
                               ),
                             ],
                           ),
