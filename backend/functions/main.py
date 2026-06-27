@@ -5,91 +5,107 @@ from firebase_admin import initialize_app
 from firebase_admin import firestore
 
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+from google.cloud.exceptions import Conflict
 
-import json
+import requests
 import random
-from datetime import datetime
+import json
+import re
+import os
+import base64
 
 set_global_options(max_instances=10)
 
 initialize_app()
 
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+#GOOGLE_API_KEY = ""
 
-# =========================
-# DB
-# =========================
+
 def get_db():
     return firestore.client()
-
-
-# =========================
-# CORS
-# =========================
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization"
-}
-
-
-def options_response():
-    return https_fn.Response(
-        "",
-        status=204,
-        headers=CORS_HEADERS
-    )
-
-
-def cors_response(body="", status=200, content_type="application/json"):
-    return https_fn.Response(
-        body,
-        status=status,
-        content_type=content_type,
-        headers=CORS_HEADERS
-    )
-
 
 # =====================
 # PROJETOS
 # =====================
+
+# ==================================================
+# POST /projetos
+# GET /projetos
+# ==================================================
+
+"""
+Cria um novo projeto (POST) ou retorna todos os projetos cadastrados (GET).
+"""
 @https_fn.on_request()
 def projetos(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
     if req.method == "POST":
-        data = req.get_json()
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
+
+        if not data:
+            return https_fn.Response(
+                json.dumps({"error": "Request body is required"}),
+                status=400,
+                content_type="application/json"
+            )
 
         doc_ref = db.collection("projetos").document()
         doc_ref.set(data)
 
-        return cors_response(
-            json.dumps({"id": doc_ref.id, **data}),
-            status=201
+        return https_fn.Response(
+            json.dumps({
+                "id": doc_ref.id,
+                **data
+            }),
+            status=201,
+            content_type="application/json"
         )
 
-    if req.method == "GET":
+    elif req.method == "GET":
         docs = db.collection("projetos").stream()
-        data = [{"id": d.id, **d.to_dict()} for d in docs]
 
-        return cors_response(json.dumps(data, default=str))
+        data = [
+            {
+                "id": doc.id,
+                **doc.to_dict()
+            }
+            for doc in docs
+        ]
 
+        return https_fn.Response(
+            json.dumps(data, default=str),
+            content_type="application/json"
+        )
 
-# =====================
-# PROJETO
-# =====================
+# ==================================================
+# GET /projeto?id=<project_id>
+# PUT /projeto?id=<project_id>
+# PATCH /projeto?id=<project_id>
+# DELETE /projeto?id=<project_id>
+# ==================================================
+
+"""
+Gerencia um projeto específico.
+"""
 @https_fn.on_request()
 def projeto(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
     projeto_id = req.args.get("id")
+
     if not projeto_id:
-        return cors_response(json.dumps({"error": "Missing id"}), status=400)
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
 
     doc_ref = db.collection("projetos").document(projeto_id)
 
@@ -97,237 +113,170 @@ def projeto(req):
         doc = doc_ref.get()
 
         if not doc.exists:
-            return cors_response(json.dumps({"error": "Not found"}), status=404)
+            return https_fn.Response(
+                json.dumps({"error": "Projeto não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
 
-        return cors_response(json.dumps({"id": doc.id, **doc.to_dict()}, default=str))
+        return https_fn.Response(
+            json.dumps({
+                "id": doc.id,
+                **doc.to_dict()
+            }, default=str),
+            content_type="application/json"
+        )
 
-    if req.method in ["PUT", "PATCH"]:
-        data = req.get_json()
+    elif req.method in ["PUT", "PATCH"]:
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return https_fn.Response(
+                json.dumps({"error": "Projeto não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
+
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
+
         doc_ref.update(data)
 
-        updated = doc_ref.get()
+        updated_doc = doc_ref.get()
 
-        return cors_response(json.dumps({
-            "message": "Updated",
-            "data": {"id": updated.id, **updated.to_dict()}
-        }, default=str))
+        return https_fn.Response(
+            json.dumps({
+                "message": "Projeto atualizado com sucesso",
+                "data": {
+                    "id": updated_doc.id,
+                    **updated_doc.to_dict()
+                }
+            }, default=str),
+            content_type="application/json"
+        )
 
-    if req.method == "DELETE":
+    elif req.method == "DELETE":
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return https_fn.Response(
+                json.dumps({"error": "Projeto não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
+
         doc_ref.delete()
-        return cors_response(json.dumps({"message": "Deleted"}))
 
-
-# =====================
-# MOCK PROJETOS COMPLETO 🔥
-# =====================
-@https_fn.on_request()
-def projetos_mock_full(req):
-    db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
-    if req.method == "POST":
-
-        tags_pool = [
-            "teste",
-            "urbano",
-            "saúde",
-            "educação",
-            "infra",
-            "digital"
-        ]
-
-        # =====================
-        # AUTORIA (VEREADORES + PARTIDOS)
-        # =====================
-        vereadores_docs = list(
-            db.collection("vereadores").stream()
+        return https_fn.Response(
+            json.dumps({
+                "message": "Projeto removido com sucesso"
+            }),
+            content_type="application/json"
         )
 
-        autoria = []
-        autoria_ids = []
-
-        if vereadores_docs:
-
-            quantidade = min(
-                random.randint(1, 3),
-                len(vereadores_docs)
-            )
-
-            escolhidos = random.sample(
-                vereadores_docs,
-                k=quantidade
-            )
-
-            for v in escolhidos:
-                dados = v.to_dict()
-
-                autoria.append({
-                    "id": v.id,
-                    "nome": dados.get(
-                        "nome",
-                        "Vereador Desconhecido"
-                    ),
-                    "partido": dados.get(
-                        "partido",
-                        "Sem Partido"
-                    )
-                })
-
-                autoria_ids.append(v.id)
-
-        else:
-            partidos_mock = [
-                "PL",
-                "PT",
-                "MDB",
-                "PSD",
-                "PP",
-                "UNIÃO"
-            ]
-
-            autoria.append({
-                "id": "mock-1",
-                "nome": "Vereador Exemplo",
-                "partido": random.choice(
-                    partidos_mock
-                )
-            })
-
-            autoria_ids.append("mock-1")
-
-        # =====================
-        # PROJETO
-        # =====================
-        projeto = {
-            "titulo":
-                f"Projeto {random.randint(1, 1000)}",
-
-            "tags":
-                random.sample(tags_pool, k=1),
-
-            "quando_sera_executado":
-                str(random.randint(2026, 2030)),
-
-            "createdAt":
-                str(datetime.utcnow()),
-
-            "updatedAt":
-                str(datetime.utcnow()),
-
-            "localidades_afetadas":
-                random.choice([
-                    "Todo o município",
-                    "Zona urbana",
-                    "Zona rural",
-                    "Centro"
-                ]),
-
-            "data_publicacao":
-                f"2026-06-{random.randint(1,28):02d}",
-
-            "como_sera_executado":
-                "Execução automática para testes",
-
-            "relevancia":
-                random.choice([
-                    "Alta",
-                    "Média",
-                    "Baixa"
-                ]),
-
-            "autoria":
-                autoria,
-
-            "autoriaIds":
-                autoria_ids,
-
-            "ideia_central":
-                "Ideia central gerada automaticamente",
-
-            "likes":
-                random.randint(0, 500),
-
-            "dislikes":
-                random.randint(0, 100),
-
-            "justificativa_relevancia":
-                "Projeto relevante para a população",
-
-            "textoOriginalUrl":
-                "https://example.com/projeto",
-
-            "status":
-                random.choice([
-                    "Em discussão",
-                    "Aprovado",
-                    "Em análise"
-                ])
-        }
-
-        doc_ref = db.collection(
-            "projetos"
-        ).document()
-
-        doc_ref.set(projeto)
-
-        return cors_response(
-            json.dumps(
-                {
-                    "id": doc_ref.id,
-                    **projeto
-                },
-                default=str
-            )
-        )
-
-    return cors_response(
-        json.dumps(
-            {
-                "error":
-                    "Method not allowed"
-            }
-        ),
-        status=405
+    return https_fn.Response(
+        json.dumps({"error": "Method not allowed"}),
+        status=405,
+        content_type="application/json"
     )
+
+
 
 
 # =====================
 # VEREADORES
 # =====================
+
+# ==================================================
+# GET /vereadores
+# POST /vereadores
+# ==================================================
+
+"""
+Cria um novo vereador (POST) ou retorna todos os vereadores cadastrados (GET).
+"""
 @https_fn.on_request()
 def vereadores(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
-    if req.method == "GET":
-        docs = db.collection("vereadores").stream()
-        return cors_response(json.dumps([{"id": d.id, **d.to_dict()} for d in docs], default=str))
-
     if req.method == "POST":
-        data = req.get_json()
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
+
+        if not data:
+            return https_fn.Response(
+                json.dumps({"error": "Request body is required"}),
+                status=400,
+                content_type="application/json"
+            )
+
         doc_ref = db.collection("vereadores").document()
         doc_ref.set(data)
 
-        return cors_response(json.dumps({"id": doc_ref.id, **data}), status=201)
+        return https_fn.Response(
+            json.dumps({
+                "id": doc_ref.id,
+                **data
+            }),
+            status=201,
+            content_type="application/json"
+        )
+
+    elif req.method == "GET":
+        docs = db.collection("vereadores").stream()
+
+        data = [
+            {
+                "id": doc.id,
+                **doc.to_dict()
+            }
+            for doc in docs
+        ]
+
+        return https_fn.Response(
+            json.dumps(data, default=str),
+            content_type="application/json"
+        )
+
+    return https_fn.Response(
+        json.dumps({"error": "Method not allowed"}),
+        status=405,
+        content_type="application/json"
+    )
 
 
-# =====================
-# VEREADOR
-# =====================
+# ==================================================
+# GET /vereador?id=<vereador_id>
+# PUT /vereador?id=<vereador_id>
+# PATCH /vereador?id=<vereador_id>
+# DELETE /vereador?id=<vereador_id>
+# ==================================================
+
+"""
+Gerencia um vereador específico.
+"""
 @https_fn.on_request()
 def vereador(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
     vereador_id = req.args.get("id")
+
     if not vereador_id:
-        return cors_response(json.dumps({"error": "Missing id"}), status=400)
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
 
     doc_ref = db.collection("vereadores").document(vereador_id)
 
@@ -335,46 +284,167 @@ def vereador(req):
         doc = doc_ref.get()
 
         if not doc.exists:
-            return cors_response(json.dumps({"error": "Not found"}), status=404)
+            return https_fn.Response(
+                json.dumps({"error": "Vereador não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
 
-        return cors_response(json.dumps({"id": doc.id, **doc.to_dict()}, default=str))
+        return https_fn.Response(
+            json.dumps({
+                "id": doc.id,
+                **doc.to_dict()
+            }, default=str),
+            content_type="application/json"
+        )
+
+    elif req.method in ["PUT", "PATCH"]:
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return https_fn.Response(
+                json.dumps({"error": "Vereador não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
+
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
+
+        doc_ref.update(data)
+
+        updated_doc = doc_ref.get()
+
+        return https_fn.Response(
+            json.dumps({
+                "message": "Vereador atualizado com sucesso",
+                "data": {
+                    "id": updated_doc.id,
+                    **updated_doc.to_dict()
+                }
+            }, default=str),
+            content_type="application/json"
+        )
+
+    elif req.method == "DELETE":
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return https_fn.Response(
+                json.dumps({"error": "Vereador não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
+
+        doc_ref.delete()
+
+        return https_fn.Response(
+            json.dumps({
+                "message": "Vereador removido com sucesso"
+            }),
+            content_type="application/json"
+        )
+
+    return https_fn.Response(
+        json.dumps({"error": "Method not allowed"}),
+        status=405,
+        content_type="application/json"
+    )
 
 
 # =====================
 # PARTIDOS
 # =====================
+
+# ==================================================
+# GET /partidos
+# POST /partidos
+# ==================================================
+
+"""
+Cria um novo partido (POST) ou retorna todos os partidos cadastrados (GET).
+"""
 @https_fn.on_request()
 def partidos(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
-    if req.method == "GET":
-        docs = db.collection("partidos").stream()
-        return cors_response(json.dumps([{"id": d.id, **d.to_dict()} for d in docs], default=str))
-
     if req.method == "POST":
-        data = req.get_json()
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
+
+        if not data:
+            return https_fn.Response(
+                json.dumps({"error": "Request body is required"}),
+                status=400,
+                content_type="application/json"
+            )
+
         doc_ref = db.collection("partidos").document()
         doc_ref.set(data)
 
-        return cors_response(json.dumps({"id": doc_ref.id, **data}), status=201)
+        return https_fn.Response(
+            json.dumps({
+                "id": doc_ref.id,
+                **data
+            }),
+            status=201,
+            content_type="application/json"
+        )
 
+    elif req.method == "GET":
+        docs = db.collection("partidos").stream()
 
-# =====================
-# PARTIDO
-# =====================
+        data = [
+            {
+                "id": doc.id,
+                **doc.to_dict()
+            }
+            for doc in docs
+        ]
+
+        return https_fn.Response(
+            json.dumps(data, default=str),
+            content_type="application/json"
+        )
+
+    return https_fn.Response(
+        json.dumps({"error": "Method not allowed"}),
+        status=405,
+        content_type="application/json"
+    )
+
+# ==================================================
+# GET /partido?id=<partido_id>
+# PUT /partido?id=<partido_id>
+# PATCH /partido?id=<partido_id>
+# DELETE /partido?id=<partido_id>
+# ==================================================
+
+"""
+Gerencia um partido específico.
+"""
 @https_fn.on_request()
 def partido(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
     partido_id = req.args.get("id")
+
     if not partido_id:
-        return cors_response(json.dumps({"error": "Missing id"}), status=400)
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
 
     doc_ref = db.collection("partidos").document(partido_id)
 
@@ -382,64 +452,356 @@ def partido(req):
         doc = doc_ref.get()
 
         if not doc.exists:
-            return cors_response(json.dumps({"error": "Not found"}), status=404)
+            return https_fn.Response(
+                json.dumps({"error": "Partido não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
 
-        return cors_response(json.dumps({"id": doc.id, **doc.to_dict()}, default=str))
+        return https_fn.Response(
+            json.dumps({
+                "id": doc.id,
+                **doc.to_dict()
+            }, default=str),
+            content_type="application/json"
+        )
+
+    elif req.method in ["PUT", "PATCH"]:
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return https_fn.Response(
+                json.dumps({"error": "Partido não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
+
+        try:
+            data = req.get_json()
+        except Exception:
+            return https_fn.Response(
+                json.dumps({"error": "Invalid JSON body"}),
+                status=400,
+                content_type="application/json"
+            )
+
+        doc_ref.update(data)
+
+        updated_doc = doc_ref.get()
+
+        return https_fn.Response(
+            json.dumps({
+                "message": "Partido atualizado com sucesso",
+                "data": {
+                    "id": updated_doc.id,
+                    **updated_doc.to_dict()
+                }
+            }, default=str),
+            content_type="application/json"
+        )
+
+    elif req.method == "DELETE":
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return https_fn.Response(
+                json.dumps({"error": "Partido não encontrado"}),
+                status=404,
+                content_type="application/json"
+            )
+
+        doc_ref.delete()
+
+        return https_fn.Response(
+            json.dumps({
+                "message": "Partido removido com sucesso"
+            }),
+            content_type="application/json"
+        )
+
+    return https_fn.Response(
+        json.dumps({"error": "Method not allowed"}),
+        status=405,
+        content_type="application/json"
+    )
 
 
 # =====================
-# RELAÇÕES
+# CONSULTAS RELACIONADAS
 # =====================
+
+# ==================================================
+# GET /partido_vereadores?id=<partido_id>
+# ==================================================
+
+"""
+Retorna todos os vereadores que pertencem a um partido.
+"""
 @https_fn.on_request()
 def partido_vereadores(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
     partido_id = req.args.get("id")
-    docs = db.collection("vereadores").where("partidoId", "==", partido_id).stream()
 
-    return cors_response(json.dumps([{"id": d.id, **d.to_dict()} for d in docs], default=str))
+    if not partido_id:
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
 
+    partido_doc = db.collection("partidos").document(partido_id).get()
 
+    if not partido_doc.exists:
+        return https_fn.Response(
+            json.dumps({"error": "Partido não encontrado"}),
+            status=404,
+            content_type="application/json"
+        )
+
+    docs = (
+        db.collection("vereadores")
+        .where("partidoId", "==", partido_id)
+        .stream()
+    )
+
+    vereadores = [
+        {
+            "id": doc.id,
+            **doc.to_dict()
+        }
+        for doc in docs
+    ]
+
+    return https_fn.Response(
+        json.dumps(vereadores, default=str),
+        content_type="application/json"
+    )
+
+# ==================================================
+# GET /partido_projetos?id=<partido_id>
+# ==================================================
+
+"""
+Retorna todos os projetos criados por vereadores de um partido.
+"""
 @https_fn.on_request()
 def partido_projetos(req):
     db = get_db()
-
-    if req.method == "OPTIONS":
-        return options_response()
-
     partido_id = req.args.get("id")
 
+    if not partido_id:
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
+
     partido_doc = db.collection("partidos").document(partido_id).get()
+
     if not partido_doc.exists:
-        return cors_response(json.dumps({"error": "Not found"}), status=404)
+        return https_fn.Response(
+            json.dumps({"error": "Partido não encontrado"}),
+            status=404,
+            content_type="application/json"
+        )
 
-    sigla = partido_doc.to_dict().get("sigla")
+    sigla = partido_doc.to_dict()["sigla"]
 
-    vereadores = db.collection("vereadores").where("partido", "==", sigla).stream()
-    vereadores_ids = {v.id for v in vereadores}
+    vereadores_docs = (
+        db.collection("vereadores")
+        .where("partido", "==", sigla)
+        .stream()
+    )
 
-    projetos = db.collection("projetos").stream()
+    vereador_ids = {
+        doc.id
+        for doc in vereadores_docs
+    }
 
-    result = []
-    for p in projetos:
-        data = p.to_dict()
-        if any(v in vereadores_ids for v in data.get("autoriaIds", [])):
-            result.append({"id": p.id, **data})
+    projetos_docs = db.collection("projetos").stream()
 
-    return cors_response(json.dumps(result, default=str))
+    projetos = []
 
+    for doc in projetos_docs:
+        projeto = doc.to_dict()
+
+        autoria_ids = projeto.get(
+            "autoriaIds",
+            []
+        )
+
+        if any(
+            vereador_id in vereador_ids
+            for vereador_id in autoria_ids
+        ):
+            projetos.append({
+                "id": doc.id,
+                **projeto
+            })
+
+    return https_fn.Response(
+        json.dumps(projetos, default=str),
+        content_type="application/json"
+    )
 
 
 # =====================
-# POST PARTIDOS E VEREADORES
+# DADOS DE TESTE
 # =====================
 
+# ==================================================
+# POST /mock_projeto
+# ==================================================
 
+"""
+Cria um projeto fictício para testes.
+"""
 @https_fn.on_request()
-def criar_dados_iniciais(req):
+def mock_projeto(req):
+    db = get_db()
+    if req.method != "POST":
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
+        )
+
+    novo_projeto = {
+        "titulo": f"Projeto {random.randint(1,1000)}",
+        "data_publicacao": "2026-06-01",
+        "status": random.choice([
+            "Em discussão",
+            "Aprovado",
+            "Rejeitado"
+        ]),
+        "ideia_central": "Ideia central gerada automaticamente",
+        "localidades_afetadas": "Todo o município",
+        "quando_sera_executado": "2027",
+        "como_sera_executado": "Execução automática para testes",
+        "autoria": [],
+        "relevancia": "Alta",
+        "justificativa_relevancia":
+            "Projeto relevante para a população",
+        "likes": random.randint(0,300),
+        "dislikes": random.randint(0,50),
+        "tags": ["teste"],
+        "textoOriginalUrl": "https://example.com/projeto",
+
+        "createdAt": SERVER_TIMESTAMP,
+        "updatedAt": SERVER_TIMESTAMP
+    }
+
+    _, doc_ref = db.collection("projetos").add(novo_projeto)
+
+    return https_fn.Response(
+        json.dumps({
+            "message": "Projeto mock criado",
+            "id": doc_ref.id
+        }),
+        content_type="application/json"
+    )
+
+# ==================================================
+# POST /mock_vereador
+# ==================================================
+
+"""
+Cria um vereador fictício para testes.
+"""
+@https_fn.on_request()
+def mock_vereador(req):
+    db = get_db()
+    if req.method != "POST":
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
+        )
+
+    novo_vereador = {
+        "nome": f"Vereador {random.randint(1,1000)}",
+        "partido": random.choice([
+            "PT",
+            "PL",
+            "MDB",
+            "PDT",
+            "PSB"
+        ]),
+        "foto": "",
+        "biografia": "Biografia gerada automaticamente",
+        "projetos": [],
+        "projetos_aprovados": random.randint(0,20),
+        "contato": "vereador@example.com",
+
+        "createdAt": SERVER_TIMESTAMP,
+        "updatedAt": SERVER_TIMESTAMP
+    }
+
+    _, doc_ref = db.collection("vereadores").add(novo_vereador)
+
+    return https_fn.Response(
+        json.dumps({
+            "message": "Vereador mock criado",
+            "id": doc_ref.id
+        }),
+        content_type="application/json"
+    )
+
+# ==================================================
+# POST /mock_partido
+# ==================================================
+
+"""
+Cria um partido fictício para testes.
+"""
+@https_fn.on_request()
+def mock_partido(req):
+    db = get_db()
+    if req.method != "POST":
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
+        )
+
+    partidos = [
+        ("Partido dos Trabalhadores", "PT", 1980),
+        ("Partido Liberal", "PL", 2006),
+        ("Movimento Democrático Brasileiro", "MDB", 1966),
+        ("Partido Democrático Trabalhista", "PDT", 1979),
+        ("Partido Socialista Brasileiro", "PSB", 1947)
+    ]
+
+    nome, sigla, ano = random.choice(partidos)
+
+    novo_partido = {
+        "nome": nome,
+        "sigla": sigla,
+        "ano_criacao": ano,
+
+        "createdAt": SERVER_TIMESTAMP,
+        "updatedAt": SERVER_TIMESTAMP
+    }
+
+    _, doc_ref = db.collection("partidos").add(novo_partido)
+
+    return https_fn.Response(
+        json.dumps({
+            "message": "Partido mock criado",
+            "id": doc_ref.id
+        }),
+        content_type="application/json"
+    )
+
+# ==================================================
+# POST /mock_dados_iniciais
+# ==================================================
+
+"""
+Cria dados iniciais fictícios para testes, incluindo partidos e vereadores.
+"""
+@https_fn.on_request()
+def mock_dados_iniciais(req):
     db = get_db()
 
     if req.method != "POST":
@@ -448,7 +810,6 @@ def criar_dados_iniciais(req):
             status=405
         )
 
-    # Partidos
     pt_ref = db.collection("partidos").document()
     pt_ref.set({
         "nome": "Partido dos Trabalhadores",
@@ -461,7 +822,6 @@ def criar_dados_iniciais(req):
         "sigla": "PL"
     })
 
-    # Vereadores
     db.collection("vereadores").document().set({
         "nome": "João Silva",
         "partido": "PT",
@@ -481,93 +841,316 @@ def criar_dados_iniciais(req):
         content_type="application/json"
     )
 
-
-
-
-
-
 # =====================
-# VINCULAR AUTORIAS
+# PROCESSAMENTO DE ARQUIVOS
 # =====================
+
+# ==================================================
+# GET /archive
+# ==================================================
+
+"""
+Retorna todos os registros da coleção archive.
+"""
 @https_fn.on_request()
-def vincular_autorias(req):
+def archive(req):
     db = get_db()
+    docs = db.collection("archive").stream()
 
-    if req.method == "OPTIONS":
-        return options_response()
+    data = [
+        {
+            "id": doc.id,
+            **doc.to_dict()
+        }
+        for doc in docs
+    ]
 
+    return https_fn.Response(
+        json.dumps(data, default=str),
+        content_type="application/json"
+    )
+
+# ==================================================
+# POST /populate_archive
+# ==================================================
+
+"""
+Importa atos municipais do Diário Municipal para a coleção archive.
+
+Fluxo:
+1. Acessa as páginas do Diário Municipal.
+2. Coleta os IDs dos atos.
+3. Salva novos registros.
+4. Ignora registros já existentes.
+"""
+@https_fn.on_request()
+def populate_archive(req):
+    db = get_db()
     if req.method != "POST":
-        return cors_response(
-            json.dumps({
-                "error": "Método não permitido"
-            }),
-            status=405
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
         )
 
-    vereadores = db.collection("vereadores").stream()
+    created = 0
+    skipped = 0
+    page = 1
 
-    mapa_vereadores = {}
-
-    for vereador in vereadores:
-        dados = vereador.to_dict()
-
-        nome = (
-            dados.get("nome", "")
-            .strip()
-            .lower()
+    while True:
+        url = (
+            "https://diariomunicipal.sc.gov.br/"
+            f"?AtoNormativoASolrDocument_page={page}"
+            "&ajax=leis-municipio"
+            "&id=24"
+            "&pageSize=100"
+            "&r=site%2FmunView"
         )
 
-        mapa_vereadores[nome] = vereador.id
+        print(f"Processing page {page}")
 
-    projetos = db.collection("projetos").stream()
-
-    atualizados = 0
-
-    for projeto in projetos:
-        dados = projeto.to_dict()
-
-        autores = dados.get("autoria", [])
-
-        autoria_ids = []
-
-        for autor in autores:
-
-            # autoria é um objeto
-            if isinstance(autor, dict):
-                nome_autor = (
-                    autor.get("nome", "")
-                    .strip()
-                    .lower()
-                )
-
-            # caso existam projetos antigos
-            else:
-                nome_autor = (
-                    str(autor)
-                    .strip()
-                    .lower()
-                )
-
-            vereador_id = mapa_vereadores.get(
-                nome_autor
+        try:
+            response = requests.get(
+                url,
+                timeout=30,
+                headers={
+                    "User-Agent": "Mozilla/5.0"
+                }
             )
 
-            if vereador_id:
-                autoria_ids.append(
-                    vereador_id
-                )
+            response.raise_for_status()
 
-        projeto.reference.update({
-            "autoriaIds": autoria_ids
-        })
+        except Exception as e:
+            print(f"Failed page {page}: {e}")
+            break
 
-        atualizados += 1
+        ids = set(
+            re.findall(
+                r"/atos/(\d+)",
+                response.text
+            )
+        )
 
-    return cors_response(
+        page_count = len(ids)
+
+        print(f"Found {page_count} acts")
+
+        if page_count == 0:
+            break
+
+        for ato_id in ids:
+            doc_ref = (
+                db.collection("archive")
+                .document(ato_id)
+            )
+
+            try:
+                doc_ref.create({
+                    "id": ato_id,
+                    "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
+                    "date": None,
+                    "createdAt": SERVER_TIMESTAMP,
+                    "updatedAt": SERVER_TIMESTAMP
+                })
+
+                created += 1
+
+            except Conflict:
+                skipped += 1
+
+        page += 1
+
+        # Last page
+        if page_count < 100:
+            break
+
+    return https_fn.Response(
         json.dumps({
-            "message":
-                "Autorias vinculadas com sucesso",
-            "projetosAtualizados":
-                atualizados
-        })
+            "success": True,
+            "created": created,
+            "skipped": skipped,
+            "pages_processed": page - 1
+        }),
+        content_type="application/json"
     )
+
+# ==================================================
+# GET /archives_pending
+# ==================================================
+
+"""
+Retorna todos os registros que ainda não foram processados.
+"""
+@https_fn.on_request()
+def archives_pending(req):
+    db = get_db()
+    docs = db.collection("archive").stream()
+
+    data = [
+        {
+            "id": doc.id,
+            **doc.to_dict()
+        }
+        for doc in docs
+        if doc.to_dict().get("processed") != True
+    ]
+
+    return https_fn.Response(
+        json.dumps(data, default=str),
+        content_type="application/json"
+    )
+
+# ==================================================
+# POST /process_archive?id=<archive_id>
+# ==================================================
+
+"""
+Processa um registro específico da coleção archive.
+"""
+"""
+Lê o PDF do ato municipal, usa IA para extrair informações
+e cria um novo projeto automaticamente.
+"""
+@https_fn.on_request()
+def process_archive(req):
+    db = get_db()
+    if req.method != "POST":
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
+        )
+
+    archive_id = req.args.get("id")
+
+    if not archive_id:
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
+
+    doc_ref = db.collection("archive").document(archive_id)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        return https_fn.Response(
+            json.dumps({"error": "Archive not found"}),
+            status=404,
+            content_type="application/json"
+        )
+
+    try:
+        archive_data = doc.to_dict()
+
+        projeto_id = extract_project_with_ai(
+            archive_id,
+            archive_data
+        )
+
+        doc_ref.update({
+            "processed": True,
+            "projetoId": projeto_id,
+            "updatedAt": SERVER_TIMESTAMP
+        })
+
+        return https_fn.Response(
+            json.dumps({
+                "success": True,
+                "archiveId": archive_id,
+                "projetoId": projeto_id
+            }),
+            content_type="application/json"
+        )
+
+    except Exception as e:
+        return https_fn.Response(
+            json.dumps({
+                "error": str(e)
+            }),
+            status=500,
+            content_type="application/json"
+        )
+
+def extract_project_with_ai(archive_id, archive_data):
+    db = get_db()
+    response = requests.get(
+        archive_data["url"],
+        timeout=30,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
+    response.raise_for_status()
+
+    pdf_urls = re.findall(
+        r'https://[^"\'> ]+\.pdf',
+        response.text
+    )
+
+    original_pdf = next(
+        (url for url in pdf_urls if "_extrato" not in url),
+        None
+    )
+
+    if not original_pdf:
+        raise Exception("PDF original não encontrado")
+
+    pdf_response = requests.get(original_pdf, timeout=30)
+    pdf_response.raise_for_status()
+
+    pdf_base64 = base64.b64encode(pdf_response.content).decode("utf-8")
+
+    payload = {
+        "contents": [{
+            "parts": [
+                {
+                    "inline_data": {
+                        "mime_type": "application/pdf",
+                        "data": pdf_base64
+                    }
+                },
+                {
+                    "text": """
+                    Analyze this municipal act.
+
+                    Return ONLY JSON:
+                    {
+                      "titulo": "",
+                      "ideia_central": "",
+                      "localidades_afetadas": "",
+                      "status": "",
+                      "tags": []
+                    }
+                    """
+                }
+            ]
+        }]
+    }
+
+    ai_response = requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={GOOGLE_API_KEY}",
+        json=payload,
+        timeout=60
+    )
+
+    ai_response.raise_for_status()
+
+    result = ai_response.json()
+
+    if not result.get("candidates"):
+        raise Exception("Gemini retornou resposta vazia")
+
+    text = result["candidates"][0]["content"]["parts"][0]["text"]
+
+    # remove markdown fences if Gemini adds them
+    text = text.replace("```json", "").replace("```", "").strip()
+
+    projeto_data = json.loads(text)
+
+    projeto_data["archiveId"] = archive_id
+    projeto_data["createdAt"] = SERVER_TIMESTAMP
+    projeto_data["updatedAt"] = SERVER_TIMESTAMP
+
+    projeto_ref = db.collection("projetos").document()
+    projeto_ref.set(projeto_data)
+
+    return projeto_ref.id
