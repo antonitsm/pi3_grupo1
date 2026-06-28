@@ -25,6 +25,149 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 def get_db():
     return firestore.client()
 
+
+# =====================
+# HELPERS
+# =====================
+
+FIRST_NAMES = [
+    "João", "Maria", "José", "Ana", "Pedro", "Lucas", "Gabriel",
+    "Rafael", "Bruno", "Carlos", "Fernando", "Ricardo", "Marcos",
+    "Paulo", "Roberto", "Eduardo", "André", "Felipe", "Gustavo",
+    "Thiago", "Juliana", "Fernanda", "Camila", "Patrícia", "Amanda",
+    "Beatriz", "Larissa", "Mariana", "Carolina", "Renata", "Vanessa",
+    "Aline", "Natália", "Isabela", "Letícia", "Sofia", "Helena",
+    "Vinícius", "Matheus", "Diego"
+]
+
+LAST_NAMES = [
+    "Silva", "Souza", "Oliveira", "Santos", "Pereira", "Lima",
+    "Ferreira", "Almeida", "Costa", "Gomes", "Rodrigues", "Martins",
+    "Araújo", "Barbosa", "Rocha", "Cardoso", "Dias", "Teixeira",
+    "Correia", "Mendes", "Ribeiro", "Monteiro", "Carvalho", "Moreira",
+    "Nunes", "Castro", "Freitas", "Moura", "Machado", "Batista",
+    "Vieira", "Campos", "Rezende", "Farias", "Tavares", "Cavalcante",
+    "Peixoto", "Assis", "Borges", "Moraes"
+]
+
+
+ADJECTIVES = [
+    "Democrático", "Popular", "Nacional", "Liberal", "Progressista",
+    "Conservador", "Social", "Trabalhista", "Republicano", "Federal",
+    "Cidadão", "Solidário", "Renovador", "Independente", "Unido",
+    "Sustentável", "Patriótico", "Humanista", "Cristão", "Reformista",
+    "Verde", "Livre"
+]
+
+NOUNS = [
+    "Movimento", "Partido", "Frente", "Aliança", "União",
+    "Coalizão", "Liga", "Bloco"
+]
+
+CAUSES = [
+    "Brasil", "Trabalho", "Justiça", "Liberdade", "Democracia",
+    "Desenvolvimento", "Progresso", "Família", "Educação",
+    "Saúde", "Economia", "Cidadania", "Inovação", "Sustentabilidade",
+    "Futuro", "Igualdade", "Esperança", "Ordem", "Reforma",
+    "Direitos", "Povo", "Juventude"
+]
+
+
+def gerar_nome():
+    primeiro = random.choice(FIRST_NAMES)
+
+    # 70% chance of having two surnames
+    if random.random() < 0.7:
+        sobrenomes = random.sample(LAST_NAMES, 2)
+        return f"{primeiro} {' '.join(sobrenomes)}"
+
+    return f"{primeiro} {random.choice(LAST_NAMES)}"
+
+
+def gerar_nome_partido():
+    estrutura = random.randint(0, 3)
+
+    if estrutura == 0:
+        # Partido Democrático Nacional
+        palavras = [
+            random.choice(NOUNS),
+            random.choice(ADJECTIVES),
+            random.choice(CAUSES)
+        ]
+
+    elif estrutura == 1:
+        # Movimento pela Justiça
+        palavras = [
+            random.choice(NOUNS),
+            "pela",
+            random.choice(CAUSES)
+        ]
+
+    elif estrutura == 2:
+        # União Popular Democrática
+        palavras = [
+            random.choice(NOUNS),
+            random.choice(ADJECTIVES),
+            random.choice(ADJECTIVES)
+        ]
+
+    else:
+        # Partido Nacional do Trabalho
+        palavras = [
+            random.choice(NOUNS),
+            random.choice(ADJECTIVES),
+            "do",
+            random.choice(CAUSES)
+        ]
+
+    return " ".join(palavras)
+
+
+def gerar_sigla(nome):
+    ignorar = {
+        "da", "de", "do", "dos", "das",
+        "e", "pela", "pelo", "por", "para"
+    }
+
+    letras = [
+        palavra[0].upper()
+        for palavra in nome.split()
+        if palavra.lower() not in ignorar
+    ]
+
+    return "".join(letras)
+
+
+def gerar_partido_unico(db):
+    nomes_existentes = {
+        doc.get("nome")
+        for doc in db.collection("partidos").stream()
+    }
+
+    siglas_existentes = {
+        doc.get("sigla")
+        for doc in db.collection("partidos").stream()
+    }
+
+    while True:
+        nome = gerar_nome_partido()
+        sigla = gerar_sigla(nome)
+
+        if nome in nomes_existentes:
+            continue
+
+        if sigla in siglas_existentes:
+            continue
+
+        return {
+            "nome": nome,
+            "sigla": sigla,
+            "ano_criacao": random.randint(1945, 2026),
+            "createdAt": SERVER_TIMESTAMP,
+            "updatedAt": SERVER_TIMESTAMP
+        }
+
+
 # =====================
 # PROJETOS
 # =====================
@@ -666,6 +809,19 @@ def mock_projeto(req):
             content_type="application/json"
         )
 
+
+    vereadores_docs = list(db.collection("vereadores").stream())
+
+    autoria = []
+    autoria_ids = []
+
+    if vereadores_docs:
+        quantidade = random.randint(1, min(3, len(vereadores_docs)))
+        escolhidos = random.sample(vereadores_docs, quantidade)
+
+        autoria = [v.to_dict().get("nome", "") for v in escolhidos]
+        autoria_ids = [v.id for v in escolhidos]
+
     novo_projeto = {
         "titulo": f"Projeto {random.randint(1,1000)}",
         "data_publicacao": "2026-06-01",
@@ -678,7 +834,8 @@ def mock_projeto(req):
         "localidades_afetadas": "Todo o município",
         "quando_sera_executado": "2027",
         "como_sera_executado": "Execução automática para testes",
-        "autoria": [],
+        "autoria": autoria,
+        "autoriaIds": autoria_ids,
         "relevancia": "Alta",
         "justificativa_relevancia":
             "Projeto relevante para a população",
@@ -718,18 +875,37 @@ def mock_vereador(req):
             content_type="application/json"
         )
 
+
+    # Buscar partidos existentes
+    partidos_docs = list(db.collection("partidos").stream())
+
+    partido = ""
+    partido_id = ""
+
+    if partidos_docs:
+        partido_doc = random.choice(partidos_docs)
+        partido_data = partido_doc.to_dict()
+
+        partido = partido_data.get("sigla") or partido_data.get("nome", "")
+        partido_id = partido_doc.id
+
+    # Buscar projetos existentes
+    projetos_docs = list(db.collection("projetos").stream())
+
+    projetos = []
+
+    if projetos_docs:
+        quantidade = random.randint(0, min(5, len(projetos_docs)))
+        escolhidos = random.sample(projetos_docs, quantidade)
+        projetos = [p.id for p in escolhidos]
+
     novo_vereador = {
-        "nome": f"Vereador {random.randint(1,1000)}",
-        "partido": random.choice([
-            "PT",
-            "PL",
-            "MDB",
-            "PDT",
-            "PSB"
-        ]),
+        "nome": gerar_nome(),
+        "partido": partido,
+        "partidoId": partido_id,
         "foto": "",
         "biografia": "Biografia gerada automaticamente",
-        "projetos": [],
+        "projetos": projetos,
         "projetos_aprovados": random.randint(0,20),
         "contato": "vereador@example.com",
 
@@ -757,6 +933,7 @@ Cria um partido fictício para testes.
 @https_fn.on_request()
 def mock_partido(req):
     db = get_db()
+
     if req.method != "POST":
         return https_fn.Response(
             json.dumps({"error": "Method not allowed"}),
@@ -764,31 +941,15 @@ def mock_partido(req):
             content_type="application/json"
         )
 
-    partidos = [
-        ("Partido dos Trabalhadores", "PT", 1980),
-        ("Partido Liberal", "PL", 2006),
-        ("Movimento Democrático Brasileiro", "MDB", 1966),
-        ("Partido Democrático Trabalhista", "PDT", 1979),
-        ("Partido Socialista Brasileiro", "PSB", 1947)
-    ]
-
-    nome, sigla, ano = random.choice(partidos)
-
-    novo_partido = {
-        "nome": nome,
-        "sigla": sigla,
-        "ano_criacao": ano,
-
-        "createdAt": SERVER_TIMESTAMP,
-        "updatedAt": SERVER_TIMESTAMP
-    }
+    novo_partido = gerar_partido_unico(db)
 
     _, doc_ref = db.collection("partidos").add(novo_partido)
 
     return https_fn.Response(
         json.dumps({
             "message": "Partido mock criado",
-            "id": doc_ref.id
+            "id": doc_ref.id,
+            "partido": novo_partido
         }),
         content_type="application/json"
     )
@@ -810,36 +971,105 @@ def mock_dados_iniciais(req):
             status=405
         )
 
-    pt_ref = db.collection("partidos").document()
-    pt_ref.set({
-        "nome": "Partido dos Trabalhadores",
-        "sigla": "PT"
-    })
+    # Cria 4 partidos únicos
+    partidos = []
 
-    pl_ref = db.collection("partidos").document()
-    pl_ref.set({
-        "nome": "Partido Liberal",
-        "sigla": "PL"
-    })
+    for _ in range(4):
+        partido = gerar_partido_unico(db)
 
-    db.collection("vereadores").document().set({
-        "nome": "João Silva",
-        "partido": "PT",
-        "partidoId": pt_ref.id
-    })
+        ref = db.collection("partidos").document()
+        ref.set(partido)
 
-    db.collection("vereadores").document().set({
-        "nome": "Maria Souza",
-        "partido": "PL",
-        "partidoId": pl_ref.id
-    })
+        partidos.append({
+            "ref": ref,
+            "data": partido
+        })
+
+    vereadores = set()
+    while len(vereadores) < 10:
+        vereadores.add(gerar_nome())
+
+    # Distribui vereadores aleatoriamente entre os partidos
+    for nome in list(vereadores):
+        partido = random.choice(partidos)
+
+        db.collection("vereadores").document().set({
+            "nome": nome,
+            "partido": partido["data"]["sigla"],
+            "partidoId": partido["ref"].id,
+            "createdAt": SERVER_TIMESTAMP,
+            "updatedAt": SERVER_TIMESTAMP
+        })
 
     return https_fn.Response(
         json.dumps({
-            "message": "Dados criados com sucesso"
+            "message": "Dados criados com sucesso",
+            "partidos": [
+                {
+                    "id": p["ref"].id,
+                    "nome": p["data"]["nome"],
+                    "sigla": p["data"]["sigla"]
+                }
+                for p in partidos
+            ]
         }),
         content_type="application/json"
     )
+
+
+# ==================================================
+# POST /mock_clear
+# ==================================================
+
+"""
+Remove todos os registros de teste.
+"""
+@https_fn.on_request()
+def mock_clear(req):
+    db = get_db()
+
+    if req.method != "POST":
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
+        )
+
+    collections = [
+        "projetos",
+        "vereadores",
+        "partidos",
+    ]
+
+    deleted = {}
+
+    for collection_name in collections:
+        count = 0
+        batch = db.batch()
+
+        for doc in db.collection(collection_name).stream():
+            batch.delete(doc.reference)
+            count += 1
+
+            # Firestore batches are limited to 500 operations
+            if count % 500 == 0:
+                batch.commit()
+                batch = db.batch()
+
+        # Commit any remaining deletes
+        if count % 500 != 0:
+            batch.commit()
+
+        deleted[collection_name] = count
+
+    return https_fn.Response(
+        json.dumps({
+            "message": "Todos os dados de teste foram removidos.",
+            "deleted": deleted
+        }),
+        content_type="application/json"
+    )
+
 
 # =====================
 # PROCESSAMENTO DE ARQUIVOS
