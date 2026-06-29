@@ -17,7 +17,7 @@ class _CardProjetoState extends State<CardProjeto> {
   @override
   Widget build(BuildContext context) {
     final tags = (widget.projeto["tags"] as List?) ?? [];
-    
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -91,13 +91,22 @@ class _CardProjetoState extends State<CardProjeto> {
                           if (liked) disliked = false;
                         });
                       },
-                      child: _reaction(
-                        Icons.thumb_up,
-                        liked ? Colors.green : Colors.grey,
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_up,
+                            liked ? Colors.green : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${widget.projeto["likes"] ?? 0}",
+                            style: const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
                       ),
                     ),
 
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 16),
 
                     GestureDetector(
                       onTap: () {
@@ -106,9 +115,18 @@ class _CardProjetoState extends State<CardProjeto> {
                           if (disliked) liked = false;
                         });
                       },
-                      child: _reaction(
-                        Icons.thumb_down,
-                        disliked ? Colors.red : Colors.grey,
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_down,
+                            disliked ? Colors.red : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${widget.projeto["dislikes"] ?? 0}",
+                            style: const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
                       ),
                     ),
                   ],

@@ -40,34 +40,33 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFF9F9F9),
 
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: Stack(
-          children: [
-            const BarraSuperior(),
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              child: SafeArea(
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: Stack(children: [const BarraSuperior()]),
       ),
 
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.only(left: 12, top: 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12, top: 12),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
 
             const CircleAvatar(radius: 50, backgroundColor: Colors.black),
 
@@ -91,7 +90,7 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color.fromARGB(255, 233, 233, 233),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(

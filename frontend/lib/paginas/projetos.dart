@@ -311,14 +311,22 @@ class _ProjetosPageState extends State<ProjetosPage> {
                           }
                         });
                       },
-
-                      child: _reaction(
-                        Icons.thumb_up,
-                        liked[index] ? Colors.green : Colors.grey,
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_up,
+                            liked[index] ? Colors.green : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${projeto["likes"] ?? 0}",
+                            style: const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
                       ),
                     ),
 
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 16),
 
                     GestureDetector(
                       onTap: () {
@@ -330,10 +338,18 @@ class _ProjetosPageState extends State<ProjetosPage> {
                           }
                         });
                       },
-
-                      child: _reaction(
-                        Icons.thumb_down,
-                        disliked[index] ? Colors.red : Colors.grey,
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_down,
+                            disliked[index] ? Colors.red : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${projeto["dislikes"] ?? 0}",
+                            style: const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
                       ),
                     ),
                   ],
