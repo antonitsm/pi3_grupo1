@@ -6,22 +6,23 @@ import '../widgets/rodape.dart';
 import '../services/api_service.dart';
 
 import 'vereador_individual.dart';
- 
+
 class VereadoresPage extends StatefulWidget {
   const VereadoresPage({super.key});
- 
+
   @override
   State<VereadoresPage> createState() => _VereadoresPageState();
 }
- 
+
 class _VereadoresPageState extends State<VereadoresPage> {
   final ApiService api = ApiService();
 
   List<Map<String, dynamic>> todosVereadores = [];
   List<Map<String, dynamic>> vereadoresFiltrados = [];
+  List<Map<String, dynamic>> todosProjetos = [];
 
   String busca = '';
- 
+
   @override
   void initState() {
     super.initState();
@@ -30,13 +31,16 @@ class _VereadoresPageState extends State<VereadoresPage> {
 
   Future<void> carregarVereadores() async {
     final vereadores = await api.getVereadores();
+    final projetos = await api.getProjetos();
 
     setState(() {
       todosVereadores = List<Map<String, dynamic>>.from(vereadores);
+      todosProjetos = List<Map<String, dynamic>>.from(projetos);
+
       vereadoresFiltrados = List.from(todosVereadores);
     });
   }
- 
+
   void filtrarVereadores(String texto) {
     setState(() {
       busca = texto.toLowerCase();
@@ -47,29 +51,33 @@ class _VereadoresPageState extends State<VereadoresPage> {
       }).toList();
     });
   }
- 
+
+  int quantidadeProjetos(String vereadorId) {
+    return todosProjetos.where((projeto) {
+      final autores = (projeto["autoriaIds"] as List?) ?? [];
+      return autores.contains(vereadorId);
+    }).length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
- 
+
       appBar: const BarraSuperior(),
- 
+
       body: Column(
         children: [
           const SizedBox(height: 10),
- 
+
           // TÍTULO
           const Text(
             "Vereadores",
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
           ),
- 
+
           const SizedBox(height: 20),
- 
+
           // FILTRO + BUSCA
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -89,10 +97,9 @@ class _VereadoresPageState extends State<VereadoresPage> {
                               onTap: () {
                                 setState(() {
                                   vereadoresFiltrados.sort(
-                                    (a, b) =>
-                                        ((b['projetos'] ?? []) as List).length.compareTo(
-                                              (a['projetos'] as List).length,
-                                            ),
+                                    (a, b) => quantidadeProjetos(
+                                      b["id"],
+                                    ).compareTo(quantidadeProjetos(a["id"])),
                                   );
                                 });
                                 Navigator.pop(context);
@@ -103,10 +110,9 @@ class _VereadoresPageState extends State<VereadoresPage> {
                               onTap: () {
                                 setState(() {
                                   vereadoresFiltrados.sort(
-                                    (a, b) =>
-                                        (a['projetos'] as List).length.compareTo(
-                                              ((b['projetos'] ?? []) as List).length,
-                                            ),
+                                    (a, b) => quantidadeProjetos(
+                                      a["id"],
+                                    ).compareTo(quantidadeProjetos(b["id"])),
                                   );
                                 });
                                 Navigator.pop(context);
@@ -118,9 +124,9 @@ class _VereadoresPageState extends State<VereadoresPage> {
                     );
                   },
                 ),
- 
+
                 const SizedBox(width: 10),
- 
+
                 Expanded(
                   child: Container(
                     height: 40,
@@ -141,16 +147,16 @@ class _VereadoresPageState extends State<VereadoresPage> {
               ],
             ),
           ),
- 
+
           const SizedBox(height: 20),
- 
+
           // LISTA
           Expanded(
             child: ListView.builder(
               itemCount: vereadoresFiltrados.length,
               itemBuilder: (context, index) {
                 final vereador = vereadoresFiltrados[index];
- 
+
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -184,7 +190,6 @@ class _VereadoresPageState extends State<VereadoresPage> {
                     ),
                     child: Row(
                       children: [
-
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,7 +205,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
                               Text(vereador["partido"] as String),
                               const SizedBox(height: 8),
                               Text(
-                                "${(vereador["projetos"] ?? [ ]).length} projetos",
+                                "${quantidadeProjetos(vereador["id"])} projetos",
                               ),
                             ],
                           ),
@@ -214,7 +219,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
           ),
         ],
       ),
- 
+
       bottomNavigationBar: const Rodape(paginaAtual: 1),
     );
   }

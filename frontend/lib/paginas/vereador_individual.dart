@@ -40,7 +40,6 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
 
   @override
   Widget build(BuildContext context) {
-    final projetos = (widget.vereador["projetos"] as List?) ?? [];
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -98,10 +97,7 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
               child: Column(
                 children: [
                   Text(
-                    "${widget.vereador["projetos_aprovados"]} projetos aprovados",
-                  ),
-                  Text(
-                    "${projetos.length} projeto(s) vinculado(s)",
+                    "${projetosDoVereador.length} projeto(s) vinculado(s)",
                     style: const TextStyle(color: Colors.deepOrange),
                   ),
                 ],
