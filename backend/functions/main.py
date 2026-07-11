@@ -1,4 +1,4 @@
-from firebase_functions import https_fn
+from firebase_functions import https_fn, scheduler_fn
 from firebase_functions.options import set_global_options
 
 from firebase_admin import initialize_app
@@ -1357,12 +1357,15 @@ def extract_project_with_ai(archive_id, archive_data):
     }
 
     ai_response = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={GOOGLE_API_KEY}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY}",
         json=payload,
         timeout=60
     )
 
-    ai_response.raise_for_status()
+    if not ai_response.ok:
+        print(ai_response.status_code)
+        print(ai_response.text)
+        ai_response.raise_for_status()
 
     result = ai_response.json()
 
@@ -1384,3 +1387,53 @@ def extract_project_with_ai(archive_id, archive_data):
     projeto_ref.set(projeto_data)
 
     return projeto_ref.id
+
+
+
+
+# =====================
+# SCHEDULERS
+# =====================
+
+
+class FakeRequest:
+    method = "POST"
+
+    def __init__(self, **args):
+        self.args = args
+
+@scheduler_fn.on_schedule(schedule="every 24 hours")
+def hello_world(event: scheduler_fn.ScheduledEvent) -> None:
+    print("Starting archive scheduler...")
+
+    # Step 1: Populate archive with new acts
+    try:
+        response = populate_archive(FakeRequest())
+        print("populate_archive finished")
+        print(response.get_data(as_text=True))
+    except Exception as e:
+        print(f"populate_archive failed: {e}")
+
+    # Step 2: Process at most 2 pending archives
+    db = get_db()
+
+    docs = (
+        db.collection("archive")
+        .where("processed", "!=", True)
+        .limit(2)
+        .stream()
+    )
+
+    for doc in docs:
+        try:
+            archive_id = doc.id
+            print(f"Processing archive {archive_id}")
+
+            response = process_archive(FakeRequest(id=archive_id))
+            print(response.get_data(as_text=True))
+
+        except Exception as e:
+            print(f"Failed processing {doc.id}: {e}")
+            continue
+
+    print("Scheduler finished.")
