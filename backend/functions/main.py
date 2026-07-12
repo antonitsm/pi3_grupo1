@@ -1,6 +1,11 @@
 from firebase_functions import https_fn, scheduler_fn
+
 from firebase_functions.options import set_global_options
 
+from firebase_functions import firestore_fn
+from firebase_admin import messaging
+
+from google.cloud.firestore_v1 import Query
 from firebase_admin import initialize_app
 from firebase_admin import firestore
 
@@ -948,8 +953,7 @@ def mock_partido(req):
     return https_fn.Response(
         json.dumps({
             "message": "Partido mock criado",
-            "id": doc_ref.id,
-            "partido": novo_partido
+            "id": doc_ref.id
         }),
         content_type="application/json"
     )
@@ -1039,6 +1043,7 @@ def mock_clear(req):
         "projetos",
         "vereadores",
         "partidos",
+        "archive",
     ]
 
     deleted = {}
@@ -1340,7 +1345,7 @@ def extract_project_with_ai(archive_id, archive_data):
                 },
                 {
                     "text": """
-                    Analyze this municipal act.
+                    Analyze this municipal act. autoria are names.
 
                     Return ONLY JSON:
                     {
@@ -1348,7 +1353,8 @@ def extract_project_with_ai(archive_id, archive_data):
                       "ideia_central": "",
                       "localidades_afetadas": "",
                       "status": "",
-                      "tags": []
+                      "tags": [],
+                      "autoria": []
                     }
                     """
                 }
@@ -1382,6 +1388,59 @@ def extract_project_with_ai(archive_id, archive_data):
     projeto_data["archiveId"] = archive_id
     projeto_data["createdAt"] = SERVER_TIMESTAMP
     projeto_data["updatedAt"] = SERVER_TIMESTAMP
+
+    defaults = {
+        "titulo": "",
+        "ideia_central": "",
+        "localidades_afetadas": "",
+        "status": "",
+        "tags": [],
+        "likes": 0,
+        "dislikes": 0,
+        "data_publicacao": "",
+
+        "quando_sera_executado": "",
+        "como_sera_executado": "",
+        "autoria": [],
+        "relevancia": "",
+        "justificativa_relevancia": "",
+        "textoOriginalUrl": "",
+    }
+
+    for key, default in defaults.items():
+        if projeto_data.get(key) is None:
+            projeto_data[key] = default
+
+    if not isinstance(projeto_data["autoria"], list):
+        projeto_data["autoria"] = []
+
+    if not isinstance(projeto_data["titulo"], str):
+        projeto_data["titulo"] = str(projeto_data["titulo"])
+
+    if not isinstance(projeto_data["ideia_central"], str):
+        projeto_data["ideia_central"] = str(projeto_data["ideia_central"])
+
+    if not isinstance(projeto_data["localidades_afetadas"], str):
+        projeto_data["localidades_afetadas"] = str(projeto_data["localidades_afetadas"])
+
+    if not isinstance(projeto_data["status"], str):
+        projeto_data["status"] = str(projeto_data["status"])
+
+    if not isinstance(projeto_data["tags"], list):
+        projeto_data["tags"] = []
+
+    try:
+        projeto_data["likes"] = int(projeto_data["likes"])
+    except (TypeError, ValueError):
+        projeto_data["likes"] = 0
+
+    try:
+        projeto_data["dislikes"] = int(projeto_data["dislikes"])
+    except (TypeError, ValueError):
+        projeto_data["dislikes"] = 0
+
+    if not isinstance(projeto_data["data_publicacao"], str):
+        projeto_data["data_publicacao"] = ""
 
     projeto_ref = db.collection("projetos").document()
     projeto_ref.set(projeto_data)
@@ -1420,6 +1479,7 @@ def hello_world(event: scheduler_fn.ScheduledEvent) -> None:
     docs = (
         db.collection("archive")
         .where("processed", "!=", True)
+        .order_by("createdAt", direction=Query.DESCENDING)
         .limit(2)
         .stream()
     )
@@ -1437,3 +1497,24 @@ def hello_world(event: scheduler_fn.ScheduledEvent) -> None:
             continue
 
     print("Scheduler finished.")
+
+# =====================
+# NOTIFICATIONS
+# =====================
+
+@firestore_fn.on_document_created(document="projetos/{projectId}")
+def notify_new_project(event):
+    projeto = event.data.to_dict()
+
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title="New project available",
+            body=projeto.get("titulo", "A new project has been published")
+        ),
+        topic="projects",
+        data={
+            "projectId": event.params["projectId"]
+        }
+    )
+
+    messaging.send(message)
