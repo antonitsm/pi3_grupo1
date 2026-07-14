@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "107902371501",
+    "project_id": "transparencia-municipal-4e915",
+    "storage_bucket": "transparencia-municipal-4e915.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107902371501:android:57b421697d51ce98b16824",
+        "android_client_info": {
+          "package_name": "com.example.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqB9jxUQ_lIO4FcARxblQD2wHEg4QkP3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
