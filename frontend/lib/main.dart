@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:frontend/paginas/splash_screen.dart';
 import 'firebase_options.dart';
 
 Future<void> configurarNotificacoes() async {
@@ -48,7 +49,7 @@ void main() async {
     firebaseMessagingBackgroundHandler,
   );
 
-  runApp(const MyApp());
+  runApp(const SplashScreen());
 }
 
 
