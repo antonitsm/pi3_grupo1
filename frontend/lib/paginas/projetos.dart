@@ -5,6 +5,7 @@ import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
 
 import '../services/api_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class ProjetosPage extends StatefulWidget {
   const ProjetosPage({super.key});
@@ -32,7 +33,34 @@ class _ProjetosPageState extends State<ProjetosPage> {
   void initState() {
     super.initState();
 
+    FirebaseMessaging.onMessageOpenedApp.listen(abrirProjetoDaNotificacao);
+
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        abrirProjetoDaNotificacao(message);
+      }
+    });
+
     carregarProjetos();
+  }
+
+  void abrirProjetoDaNotificacao(RemoteMessage message) async {
+    final projectId = message.data["projectId"];
+
+    if (projectId == null) return;
+
+    try {
+      final projeto = await api.getProjetoPorId(projectId);
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ProjetoDetalhePage(projeto: projeto)),
+      );
+    } catch (e) {
+      print("Erro ao abrir projeto da notificação: $e");
+    }
   }
 
   Future<void> carregarProjetos() async {
@@ -320,7 +348,9 @@ class _ProjetosPageState extends State<ProjetosPage> {
                           const SizedBox(width: 4),
                           Text(
                             "${projeto["likes"] ?? 0}",
-                            style: const TextStyle(fontWeight: FontWeight.normal),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                         ],
                       ),
@@ -347,7 +377,9 @@ class _ProjetosPageState extends State<ProjetosPage> {
                           const SizedBox(width: 4),
                           Text(
                             "${projeto["dislikes"] ?? 0}",
-                            style: const TextStyle(fontWeight: FontWeight.normal),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                         ],
                       ),

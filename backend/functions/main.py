@@ -1508,12 +1508,13 @@ def notify_new_project(event):
 
     message = messaging.Message(
         notification=messaging.Notification(
-            title="New project available",
-            body=projeto.get("titulo", "A new project has been published")
+            title=f"Novo projeto: {projeto['titulo']}",
+            body=projeto['ideia_central']
         ),
         topic="projects",
         data={
-            "projectId": event.params["projectId"]
+            "projectId": event.params["projectId"],
+            "titulo": projeto["titulo"],
         }
     )
 

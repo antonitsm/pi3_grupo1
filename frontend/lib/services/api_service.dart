@@ -17,6 +17,22 @@ class ApiService {
     throw Exception("Erro ao carregar projetos");
   }
 
+  Future<Map<String, dynamic>> getProjetoPorId(String id) async {
+  final response = await http.get(
+    Uri.parse(
+      "https://projeto-ht6dkigglq-uc.a.run.app?id=$id",
+    ),
+  );
+
+  if (response.statusCode == 200) {
+    return Map<String, dynamic>.from(
+      jsonDecode(response.body),
+    );
+  }
+
+  throw Exception("Erro ao carregar projeto");
+}
+
   Future<List<dynamic>> getVereadores() async {
     final response = await http.get(
       Uri.parse(

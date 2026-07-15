@@ -12,18 +12,14 @@ Future<void> configurarNotificacoes() async {
 
   if (settings.authorizationStatus ==
       AuthorizationStatus.authorized) {
-    print("Permissão concedida");
 
-    String? token = await messaging.getToken();
-    print("TOKEN: $token");
+    await messaging.subscribeToTopic("projects");
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Título: ${message.notification?.title}");
-      print("Mensagem: ${message.notification?.body}");
+    print("Inscrito no tópico projects");
+
+    FirebaseMessaging.onMessage.listen((message) {
+      print(message.notification?.title);
     });
-
-  } else {
-    print("Permissão negada");
   }
 }
 
@@ -39,19 +35,18 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  FirebaseMessaging.onBackgroundMessage(
+    firebaseMessagingBackgroundHandler,
+  );
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
   await configurarNotificacoes();
 
-  FirebaseMessaging.onBackgroundMessage(
-    firebaseMessagingBackgroundHandler,
-  );
-
-  runApp(const SplashScreen());
+  runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -60,7 +55,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MyApp(),
+      home: SplashScreen(),
     );
   }
 }
