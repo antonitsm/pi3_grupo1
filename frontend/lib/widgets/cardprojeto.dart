@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'projeto_detalhe.dart';
+import '../services/api_service.dart';
 
 class CardProjeto extends StatefulWidget {
   final Map<String, dynamic> projeto;
@@ -11,6 +12,8 @@ class CardProjeto extends StatefulWidget {
 }
 
 class _CardProjetoState extends State<CardProjeto> {
+  final ApiService api = ApiService();
+
   bool liked = false;
   bool disliked = false;
 
@@ -85,11 +88,27 @@ class _CardProjetoState extends State<CardProjeto> {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          liked = !liked;
-                          if (liked) disliked = false;
-                        });
+                      onTap: () async {
+                        try {
+                          final resposta = await api.reagirProjeto(
+                            widget.projeto["id"].toString(),
+                            "like",
+                          );
+
+                          setState(() {
+                            liked = !liked;
+
+                            if (liked) {
+                              disliked = false;
+                            }
+
+                            if (resposta["likes"] != null) {
+                              widget.projeto["likes"] = resposta["likes"];
+                            }
+                          });
+                        } catch (e) {
+                          print("Erro ao curtir projeto: $e");
+                        }
                       },
                       child: Row(
                         children: [
@@ -100,7 +119,9 @@ class _CardProjetoState extends State<CardProjeto> {
                           const SizedBox(width: 4),
                           Text(
                             "${widget.projeto["likes"] ?? 0}",
-                            style: const TextStyle(fontWeight: FontWeight.normal),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                         ],
                       ),
@@ -109,11 +130,27 @@ class _CardProjetoState extends State<CardProjeto> {
                     const SizedBox(width: 16),
 
                     GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          disliked = !disliked;
-                          if (disliked) liked = false;
-                        });
+                      onTap: () async {
+                        try {
+                          final resposta = await api.reagirProjeto(
+                            widget.projeto["id"].toString(),
+                            "dislike",
+                          );
+
+                          setState(() {
+                            disliked = !disliked;
+
+                            if (disliked) {
+                              liked = false;
+                            }
+
+                            if (resposta["dislikes"] != null) {
+                              widget.projeto["dislikes"] = resposta["dislikes"];
+                            }
+                          });
+                        } catch (e) {
+                          print("Erro ao descurtir projeto: $e");
+                        }
                       },
                       child: Row(
                         children: [
@@ -124,7 +161,9 @@ class _CardProjetoState extends State<CardProjeto> {
                           const SizedBox(width: 4),
                           Text(
                             "${widget.projeto["dislikes"] ?? 0}",
-                            style: const TextStyle(fontWeight: FontWeight.normal),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                         ],
                       ),

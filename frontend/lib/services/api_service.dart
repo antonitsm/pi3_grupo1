@@ -33,6 +33,29 @@ class ApiService {
   throw Exception("Erro ao carregar projeto");
 }
 
+Future<Map<String, dynamic>> reagirProjeto(
+    String id,
+    String tipo,
+) async {
+  final response = await http.patch(
+    Uri.parse(
+      "https://us-central1-transparencia-municipal-4e915.cloudfunctions.net/projeto_reacao?id=$id",
+    ),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "tipo": tipo,
+    }),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception("Erro ao registrar reação");
+  }
+
+  return jsonDecode(response.body);
+}
+
   Future<List<dynamic>> getVereadores() async {
     final response = await http.get(
       Uri.parse(

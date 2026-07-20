@@ -17,6 +17,9 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
   List<Map<String, dynamic>> vereadoresProjeto = [];
 
+  bool liked = false;
+  bool disliked = false;
+
   @override
   void initState() {
     super.initState();
@@ -24,21 +27,19 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
   }
 
   Future<void> carregarVereadores() async {
-  final vereadores = await api.getVereadores();
+    final vereadores = await api.getVereadores();
 
-  final vereadoresFiltrados =
-      List<Map<String, dynamic>>.from(
-    vereadores.where(
-      (vereador) =>
-          (widget.projeto["autoria"] as List)
-              .contains(vereador["nome"]),
-    ),
-  );
+    final vereadoresFiltrados = List<Map<String, dynamic>>.from(
+      vereadores.where(
+        (vereador) =>
+            (widget.projeto["autoria"] as List).contains(vereador["nome"]),
+      ),
+    );
 
-  setState(() {
-    vereadoresProjeto = vereadoresFiltrados;
-  });
-}
+    setState(() {
+      vereadoresProjeto = vereadoresFiltrados;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -207,9 +208,83 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    _reaction(Icons.thumb_up, Colors.green),
-                    const SizedBox(width: 10),
-                    _reaction(Icons.thumb_down, Colors.red),
+                    GestureDetector(
+                      onTap: () async {
+                        try {
+                          final resposta = await api.reagirProjeto(
+                            widget.projeto["id"].toString(),
+                            "like",
+                          );
+
+                          setState(() {
+                            liked = !liked;
+
+                            if (liked) {
+                              disliked = false;
+                            }
+
+                            if (resposta["likes"] != null) {
+                              widget.projeto["likes"] = resposta["likes"];
+                            }
+                          });
+                        } catch (e) {
+                          print("Erro no like: $e");
+                        }
+                      },
+
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_up,
+                            liked ? Colors.green : Colors.transparent,
+                          ),
+
+                          const SizedBox(width: 5),
+
+                          Text("${widget.projeto["likes"] ?? 0}"),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 20),
+
+                    GestureDetector(
+                      onTap: () async {
+                        try {
+                          final resposta = await api.reagirProjeto(
+                            widget.projeto["id"].toString(),
+                            "dislike",
+                          );
+
+                          setState(() {
+                            disliked = !disliked;
+
+                            if (disliked) {
+                              liked = false;
+                            }
+
+                            if (resposta["dislikes"] != null) {
+                              widget.projeto["dislikes"] = resposta["dislikes"];
+                            }
+                          });
+                        } catch (e) {
+                          print("Erro no dislike: $e");
+                        }
+                      },
+
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_down,
+                            disliked ? Colors.red : Colors.transparent,
+                          ),
+
+                          const SizedBox(width: 5),
+
+                          Text("${widget.projeto["dislikes"] ?? 0}"),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ],

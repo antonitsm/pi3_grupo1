@@ -18,6 +18,35 @@ import json
 import re
 import os
 import base64
+from functools import wraps
+
+
+def enable_cors(func):
+
+    @wraps(func)
+    def wrapper(req, *args, **kwargs):
+
+        if req.method == "OPTIONS":
+            response = https_fn.Response(
+                "",
+                status=204
+            )
+
+        else:
+            response = func(req, *args, **kwargs)
+
+
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = (
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        )
+        response.headers["Access-Control-Allow-Headers"] = (
+            "Content-Type"
+        )
+
+        return response
+
+    return wrapper
 
 set_global_options(max_instances=10)
 
@@ -186,6 +215,7 @@ def gerar_partido_unico(db):
 Cria um novo projeto (POST) ou retorna todos os projetos cadastrados (GET).
 """
 @https_fn.on_request()
+@enable_cors
 def projetos(req):
     db = get_db()
     if req.method == "POST":
@@ -244,6 +274,7 @@ def projetos(req):
 Gerencia um projeto específico.
 """
 @https_fn.on_request()
+@enable_cors
 def projeto(req):
     db = get_db()
     projeto_id = req.args.get("id")
@@ -335,7 +366,77 @@ def projeto(req):
     )
 
 
+# ==================================================
+# PATCH /projeto_reacao?id=<project_id>
+# ==================================================
 
+@https_fn.on_request()
+@enable_cors
+def projeto_reacao(req):
+    db = get_db()
+
+    projeto_id = req.args.get("id")
+
+    if not projeto_id:
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
+
+    if req.method != "PATCH":
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
+        )
+
+    try:
+        data = req.get_json()
+    except Exception:
+        return https_fn.Response(
+            json.dumps({"error": "Invalid JSON"}),
+            status=400,
+            content_type="application/json"
+        )
+
+    tipo = data.get("tipo")
+
+    if tipo not in ["like", "dislike"]:
+        return https_fn.Response(
+            json.dumps({"error": "Tipo inválido"}),
+            status=400,
+            content_type="application/json"
+        )
+
+    doc_ref = db.collection("projetos").document(projeto_id)
+
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        return https_fn.Response(
+            json.dumps({"error": "Projeto não encontrado"}),
+            status=404,
+            content_type="application/json"
+        )
+
+    campo = "likes" if tipo == "like" else "dislikes"
+
+    valor_atual = doc.to_dict().get(campo, 0)
+
+    novo_valor = valor_atual + 1
+
+    doc_ref.update({
+        campo: novo_valor
+    })
+
+    return https_fn.Response(
+        json.dumps({
+            "success": True,
+            campo: novo_valor
+        }),
+        content_type="application/json"
+    )
 
 # =====================
 # VEREADORES
@@ -350,6 +451,7 @@ def projeto(req):
 Cria um novo vereador (POST) ou retorna todos os vereadores cadastrados (GET).
 """
 @https_fn.on_request()
+@enable_cors
 def vereadores(req):
     db = get_db()
     if req.method == "POST":
@@ -415,6 +517,7 @@ def vereadores(req):
 Gerencia um vereador específico.
 """
 @https_fn.on_request()
+@enable_cors
 def vereador(req):
     db = get_db()
     vereador_id = req.args.get("id")
@@ -519,6 +622,7 @@ def vereador(req):
 Cria um novo partido (POST) ou retorna todos os partidos cadastrados (GET).
 """
 @https_fn.on_request()
+@enable_cors
 def partidos(req):
     db = get_db()
     if req.method == "POST":
@@ -583,6 +687,7 @@ def partidos(req):
 Gerencia um partido específico.
 """
 @https_fn.on_request()
+@enable_cors
 def partido(req):
     db = get_db()
     partido_id = req.args.get("id")
@@ -686,6 +791,7 @@ def partido(req):
 Retorna todos os vereadores que pertencem a um partido.
 """
 @https_fn.on_request()
+@enable_cors
 def partido_vereadores(req):
     db = get_db()
     partido_id = req.args.get("id")
@@ -733,6 +839,7 @@ def partido_vereadores(req):
 Retorna todos os projetos criados por vereadores de um partido.
 """
 @https_fn.on_request()
+@enable_cors
 def partido_projetos(req):
     db = get_db()
     partido_id = req.args.get("id")
@@ -1088,6 +1195,7 @@ def mock_clear(req):
 Retorna todos os registros da coleção archive.
 """
 @https_fn.on_request()
+@enable_cors
 def archive(req):
     db = get_db()
     docs = db.collection("archive").stream()
