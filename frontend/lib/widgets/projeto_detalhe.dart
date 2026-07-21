@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
 import '../services/api_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProjetoDetalhePage extends StatefulWidget {
   final Map<String, dynamic> projeto;
@@ -176,13 +177,20 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () {
-                      print(widget.projeto["textoOriginalUrl"]);
+                    onPressed: () async {
+                      final url = widget.projeto["textoOriginalUrl"];
+
+                      if (url != null && url.isNotEmpty) {
+                        final uri = Uri.parse(url);
+
+                        if (await launchUrl(uri)) {
+                          print("Abrindo link");
+                        } else {
+                          print("Não foi possível abrir");
+                        }
+                      }
                     },
-                    child: const Text(
-                      "Acesse na íntegra aqui!",
-                      selectionColor: Colors.white,
-                    ),
+                    child: const Text("Acesse na íntegra aqui!"),
                   ),
                 ),
 

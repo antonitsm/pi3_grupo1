@@ -190,6 +190,23 @@ class _VereadoresPageState extends State<VereadoresPage> {
                     ),
                     child: Row(
                       children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.black,
+                          backgroundImage:
+                              vereador["fotoUrl"] != null &&
+                                  (vereador["fotoUrl"] as String).isNotEmpty
+                              ? NetworkImage(vereador["fotoUrl"])
+                              : null,
+                          child:
+                              vereador["fotoUrl"] == null ||
+                                  (vereador["fotoUrl"] as String).isEmpty
+                              ? const Icon(Icons.person, color: Colors.white)
+                              : null,
+                        ),
+
+                        const SizedBox(width: 16),
+
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

@@ -12,11 +12,11 @@ from firebase_admin import firestore
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 from google.cloud.exceptions import Conflict
 
+from firebase_functions.options import SecretParam
+
 import requests
-import random
 import json
 import re
-import os
 import base64
 from functools import wraps
 
@@ -52,155 +52,12 @@ set_global_options(max_instances=10)
 
 initialize_app()
 
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+GOOGLE_API_KEY = SecretParam("GOOGLE_API_KEY")
 #GOOGLE_API_KEY = ""
 
 
 def get_db():
     return firestore.client()
-
-
-# =====================
-# HELPERS
-# =====================
-
-FIRST_NAMES = [
-    "João", "Maria", "José", "Ana", "Pedro", "Lucas", "Gabriel",
-    "Rafael", "Bruno", "Carlos", "Fernando", "Ricardo", "Marcos",
-    "Paulo", "Roberto", "Eduardo", "André", "Felipe", "Gustavo",
-    "Thiago", "Juliana", "Fernanda", "Camila", "Patrícia", "Amanda",
-    "Beatriz", "Larissa", "Mariana", "Carolina", "Renata", "Vanessa",
-    "Aline", "Natália", "Isabela", "Letícia", "Sofia", "Helena",
-    "Vinícius", "Matheus", "Diego"
-]
-
-LAST_NAMES = [
-    "Silva", "Souza", "Oliveira", "Santos", "Pereira", "Lima",
-    "Ferreira", "Almeida", "Costa", "Gomes", "Rodrigues", "Martins",
-    "Araújo", "Barbosa", "Rocha", "Cardoso", "Dias", "Teixeira",
-    "Correia", "Mendes", "Ribeiro", "Monteiro", "Carvalho", "Moreira",
-    "Nunes", "Castro", "Freitas", "Moura", "Machado", "Batista",
-    "Vieira", "Campos", "Rezende", "Farias", "Tavares", "Cavalcante",
-    "Peixoto", "Assis", "Borges", "Moraes"
-]
-
-
-ADJECTIVES = [
-    "Democrático", "Popular", "Nacional", "Liberal", "Progressista",
-    "Conservador", "Social", "Trabalhista", "Republicano", "Federal",
-    "Cidadão", "Solidário", "Renovador", "Independente", "Unido",
-    "Sustentável", "Patriótico", "Humanista", "Cristão", "Reformista",
-    "Verde", "Livre"
-]
-
-NOUNS = [
-    "Movimento", "Partido", "Frente", "Aliança", "União",
-    "Coalizão", "Liga", "Bloco"
-]
-
-CAUSES = [
-    "Brasil", "Trabalho", "Justiça", "Liberdade", "Democracia",
-    "Desenvolvimento", "Progresso", "Família", "Educação",
-    "Saúde", "Economia", "Cidadania", "Inovação", "Sustentabilidade",
-    "Futuro", "Igualdade", "Esperança", "Ordem", "Reforma",
-    "Direitos", "Povo", "Juventude"
-]
-
-
-def gerar_nome():
-    primeiro = random.choice(FIRST_NAMES)
-
-    # 70% chance of having two surnames
-    if random.random() < 0.7:
-        sobrenomes = random.sample(LAST_NAMES, 2)
-        return f"{primeiro} {' '.join(sobrenomes)}"
-
-    return f"{primeiro} {random.choice(LAST_NAMES)}"
-
-
-def gerar_nome_partido():
-    estrutura = random.randint(0, 3)
-
-    if estrutura == 0:
-        # Partido Democrático Nacional
-        palavras = [
-            random.choice(NOUNS),
-            random.choice(ADJECTIVES),
-            random.choice(CAUSES)
-        ]
-
-    elif estrutura == 1:
-        # Movimento pela Justiça
-        palavras = [
-            random.choice(NOUNS),
-            "pela",
-            random.choice(CAUSES)
-        ]
-
-    elif estrutura == 2:
-        # União Popular Democrática
-        palavras = [
-            random.choice(NOUNS),
-            random.choice(ADJECTIVES),
-            random.choice(ADJECTIVES)
-        ]
-
-    else:
-        # Partido Nacional do Trabalho
-        palavras = [
-            random.choice(NOUNS),
-            random.choice(ADJECTIVES),
-            "do",
-            random.choice(CAUSES)
-        ]
-
-    return " ".join(palavras)
-
-
-def gerar_sigla(nome):
-    ignorar = {
-        "da", "de", "do", "dos", "das",
-        "e", "pela", "pelo", "por", "para"
-    }
-
-    letras = [
-        palavra[0].upper()
-        for palavra in nome.split()
-        if palavra.lower() not in ignorar
-    ]
-
-    return "".join(letras)
-
-
-def gerar_partido_unico(db):
-    nomes_existentes = {
-        doc.get("nome")
-        for doc in db.collection("partidos").stream()
-    }
-
-    siglas_existentes = {
-        doc.get("sigla")
-        for doc in db.collection("partidos").stream()
-    }
-
-    while True:
-        nome = gerar_nome_partido()
-        sigla = gerar_sigla(nome)
-
-        if nome in nomes_existentes:
-            continue
-
-        if sigla in siglas_existentes:
-            continue
-
-        return {
-            "nome": nome,
-            "sigla": sigla,
-            "ano_criacao": random.randint(1945, 2026),
-            "createdAt": SERVER_TIMESTAMP,
-            "updatedAt": SERVER_TIMESTAMP
-        }
-
 
 # =====================
 # PROJETOS
@@ -905,230 +762,6 @@ def partido_projetos(req):
 # =====================
 
 # ==================================================
-# POST /mock_projeto
-# ==================================================
-
-"""
-Cria um projeto fictício para testes.
-"""
-@https_fn.on_request()
-def mock_projeto(req):
-    db = get_db()
-    if req.method != "POST":
-        return https_fn.Response(
-            json.dumps({"error": "Method not allowed"}),
-            status=405,
-            content_type="application/json"
-        )
-
-
-    vereadores_docs = list(db.collection("vereadores").stream())
-
-    autoria = []
-    autoria_ids = []
-
-    if vereadores_docs:
-        quantidade = random.randint(1, min(3, len(vereadores_docs)))
-        escolhidos = random.sample(vereadores_docs, quantidade)
-
-        autoria = [v.to_dict().get("nome", "") for v in escolhidos]
-        autoria_ids = [v.id for v in escolhidos]
-
-    novo_projeto = {
-        "titulo": f"Projeto {random.randint(1,1000)}",
-        "data_publicacao": "2026-06-01",
-        "status": random.choice([
-            "Em discussão",
-            "Aprovado",
-            "Rejeitado"
-        ]),
-        "ideia_central": "Ideia central gerada automaticamente",
-        "localidades_afetadas": "Todo o município",
-        "quando_sera_executado": "2027",
-        "como_sera_executado": "Execução automática para testes",
-        "autoria": autoria,
-        "autoriaIds": autoria_ids,
-        "relevancia": "Alta",
-        "justificativa_relevancia":
-            "Projeto relevante para a população",
-        "likes": random.randint(0,300),
-        "dislikes": random.randint(0,50),
-        "tags": ["teste"],
-        "textoOriginalUrl": "https://example.com/projeto",
-
-        "createdAt": SERVER_TIMESTAMP,
-        "updatedAt": SERVER_TIMESTAMP
-    }
-
-    _, doc_ref = db.collection("projetos").add(novo_projeto)
-
-    return https_fn.Response(
-        json.dumps({
-            "message": "Projeto mock criado",
-            "id": doc_ref.id
-        }),
-        content_type="application/json"
-    )
-
-# ==================================================
-# POST /mock_vereador
-# ==================================================
-
-"""
-Cria um vereador fictício para testes.
-"""
-@https_fn.on_request()
-def mock_vereador(req):
-    db = get_db()
-    if req.method != "POST":
-        return https_fn.Response(
-            json.dumps({"error": "Method not allowed"}),
-            status=405,
-            content_type="application/json"
-        )
-
-
-    # Buscar partidos existentes
-    partidos_docs = list(db.collection("partidos").stream())
-
-    partido = ""
-    partido_id = ""
-
-    if partidos_docs:
-        partido_doc = random.choice(partidos_docs)
-        partido_data = partido_doc.to_dict()
-
-        partido = partido_data.get("sigla") or partido_data.get("nome", "")
-        partido_id = partido_doc.id
-
-    # Buscar projetos existentes
-    projetos_docs = list(db.collection("projetos").stream())
-
-    projetos = []
-
-    if projetos_docs:
-        quantidade = random.randint(0, min(5, len(projetos_docs)))
-        escolhidos = random.sample(projetos_docs, quantidade)
-        projetos = [p.id for p in escolhidos]
-
-    novo_vereador = {
-        "nome": gerar_nome(),
-        "partido": partido,
-        "partidoId": partido_id,
-        "foto": "",
-        "biografia": "Biografia gerada automaticamente",
-        "projetos": projetos,
-        "projetos_aprovados": random.randint(0,20),
-        "contato": "vereador@example.com",
-
-        "createdAt": SERVER_TIMESTAMP,
-        "updatedAt": SERVER_TIMESTAMP
-    }
-
-    _, doc_ref = db.collection("vereadores").add(novo_vereador)
-
-    return https_fn.Response(
-        json.dumps({
-            "message": "Vereador mock criado",
-            "id": doc_ref.id
-        }),
-        content_type="application/json"
-    )
-
-# ==================================================
-# POST /mock_partido
-# ==================================================
-
-"""
-Cria um partido fictício para testes.
-"""
-@https_fn.on_request()
-def mock_partido(req):
-    db = get_db()
-
-    if req.method != "POST":
-        return https_fn.Response(
-            json.dumps({"error": "Method not allowed"}),
-            status=405,
-            content_type="application/json"
-        )
-
-    novo_partido = gerar_partido_unico(db)
-
-    _, doc_ref = db.collection("partidos").add(novo_partido)
-
-    return https_fn.Response(
-        json.dumps({
-            "message": "Partido mock criado",
-            "id": doc_ref.id
-        }),
-        content_type="application/json"
-    )
-
-# ==================================================
-# POST /mock_dados_iniciais
-# ==================================================
-
-"""
-Cria dados iniciais fictícios para testes, incluindo partidos e vereadores.
-"""
-@https_fn.on_request()
-def mock_dados_iniciais(req):
-    db = get_db()
-
-    if req.method != "POST":
-        return https_fn.Response(
-            "Método não permitido",
-            status=405
-        )
-
-    # Cria 4 partidos únicos
-    partidos = []
-
-    for _ in range(4):
-        partido = gerar_partido_unico(db)
-
-        ref = db.collection("partidos").document()
-        ref.set(partido)
-
-        partidos.append({
-            "ref": ref,
-            "data": partido
-        })
-
-    vereadores = set()
-    while len(vereadores) < 10:
-        vereadores.add(gerar_nome())
-
-    # Distribui vereadores aleatoriamente entre os partidos
-    for nome in list(vereadores):
-        partido = random.choice(partidos)
-
-        db.collection("vereadores").document().set({
-            "nome": nome,
-            "partido": partido["data"]["sigla"],
-            "partidoId": partido["ref"].id,
-            "createdAt": SERVER_TIMESTAMP,
-            "updatedAt": SERVER_TIMESTAMP
-        })
-
-    return https_fn.Response(
-        json.dumps({
-            "message": "Dados criados com sucesso",
-            "partidos": [
-                {
-                    "id": p["ref"].id,
-                    "nome": p["data"]["nome"],
-                    "sigla": p["data"]["sigla"]
-                }
-                for p in partidos
-            ]
-        }),
-        content_type="application/json"
-    )
-
-
-# ==================================================
 # POST /mock_clear
 # ==================================================
 
@@ -1136,6 +769,7 @@ def mock_dados_iniciais(req):
 Remove todos os registros de teste.
 """
 @https_fn.on_request()
+@enable_cors
 def mock_clear(req):
     db = get_db()
 
@@ -1227,6 +861,7 @@ Fluxo:
 4. Ignora registros já existentes.
 """
 @https_fn.on_request()
+@enable_cors
 def populate_archive(req):
     db = get_db()
     if req.method != "POST":
@@ -1292,6 +927,7 @@ def populate_archive(req):
                     "id": ato_id,
                     "url": f"https://diariomunicipal.sc.gov.br/atos/{ato_id}",
                     "date": None,
+                    "processed": False,
                     "createdAt": SERVER_TIMESTAMP,
                     "updatedAt": SERVER_TIMESTAMP
                 })
@@ -1325,6 +961,7 @@ def populate_archive(req):
 Retorna todos os registros que ainda não foram processados.
 """
 @https_fn.on_request()
+@enable_cors
 def archives_pending(req):
     db = get_db()
     docs = db.collection("archive").stream()
@@ -1354,7 +991,10 @@ Processa um registro específico da coleção archive.
 Lê o PDF do ato municipal, usa IA para extrair informações
 e cria um novo projeto automaticamente.
 """
-@https_fn.on_request()
+@https_fn.on_request(
+    secrets=["GOOGLE_API_KEY"]
+)
+@enable_cors
 def process_archive(req):
     db = get_db()
     if req.method != "POST":
@@ -1365,13 +1005,15 @@ def process_archive(req):
         )
 
     archive_id = req.args.get("id")
-
+    
     if not archive_id:
         return https_fn.Response(
             json.dumps({"error": "Missing id"}),
             status=400,
             content_type="application/json"
         )
+    
+    print(f"[{archive_id}] Iniciando processamento")
 
     doc_ref = db.collection("archive").document(archive_id)
     doc = doc_ref.get()
@@ -1382,14 +1024,20 @@ def process_archive(req):
             status=404,
             content_type="application/json"
         )
+        
+    print(f"[{archive_id}] Documento encontrado no Firestore")
 
     try:
         archive_data = doc.to_dict()
+        
+        print(f"[{archive_id}] Chamando extract_project_with_ai")
 
         projeto_id = extract_project_with_ai(
             archive_id,
             archive_data
         )
+        
+        print(f"[{archive_id}] Projeto criado: {projeto_id}")
 
         doc_ref.update({
             "processed": True,
@@ -1397,6 +1045,8 @@ def process_archive(req):
             "updatedAt": SERVER_TIMESTAMP
         })
 
+        print(f"[{archive_id}] Archive atualizado como processado")
+        
         return https_fn.Response(
             json.dumps({
                 "success": True,
@@ -1407,6 +1057,11 @@ def process_archive(req):
         )
 
     except Exception as e:
+        import traceback
+
+        print(f"[{archive_id}] ERRO durante o processamento")
+        traceback.print_exc()
+
         return https_fn.Response(
             json.dumps({
                 "error": str(e)
@@ -1414,9 +1069,13 @@ def process_archive(req):
             status=500,
             content_type="application/json"
         )
+    
 
 def extract_project_with_ai(archive_id, archive_data):
     db = get_db()
+    
+    print(f"[{archive_id}] Iniciando extract_project_with_ai")
+    
     response = requests.get(
         archive_data["url"],
         timeout=30,
@@ -1424,21 +1083,33 @@ def extract_project_with_ai(archive_id, archive_data):
     )
     response.raise_for_status()
 
+    print(f"[{archive_id}] Página baixada com sucesso")
+    
     pdf_urls = re.findall(
         r'https://[^"\'> ]+\.pdf',
         response.text
     )
+    
+    print(f"[{archive_id}] PDFs encontrados: {len(pdf_urls)}")
 
     original_pdf = next(
         (url for url in pdf_urls if "_extrato" not in url),
         None
     )
+    
+    print(f"[{archive_id}] PDF escolhido: {original_pdf}")
 
     if not original_pdf:
         raise Exception("PDF original não encontrado")
+    
+    print(f"[{archive_id}] Baixando PDF")
 
     pdf_response = requests.get(original_pdf, timeout=30)
     pdf_response.raise_for_status()
+    
+    print(
+    f"[{archive_id}] PDF baixado ({len(pdf_response.content)} bytes)"
+)
 
     pdf_base64 = base64.b64encode(pdf_response.content).decode("utf-8")
 
@@ -1452,36 +1123,134 @@ def extract_project_with_ai(archive_id, archive_data):
                     }
                 },
                 {
-                    "text": """
-                    Analyze this municipal act. autoria are names.
+                        "text": """
+                    Você é um assistente especializado em simplificar projetos de lei e atos legislativos municipais para cidadãos comuns.
 
-                    Return ONLY JSON:
+                    Analise cuidadosamente o PDF enviado.
+
+                    Sua tarefa é extrair as informações mais importantes do documento utilizando linguagem simples, clara e objetiva.
+
+                    Regras obrigatórias:
+
+                    1. Não invente informações. Se algum dado não puder ser identificado, utilize "" para campos de texto ou [] para listas.
+
+                    2. Não emita opiniões pessoais.
+
+                    3. Mantenha o significado original do documento.
+
+                    4. Utilize linguagem acessível, evitando termos jurídicos complexos.
+
+                    5. Preencha os seguintes campos:
+
+                    - titulo
+                    - data_publicacao
+                    - status
+                    - ideia_central
+                    - localidades_afetadas
+                    - quando_sera_executado
+                    - como_sera_executado
+                    - autoria
+                    - relevancia
+                    - justificativa_relevancia
+                    - tags
+
+                    6. Para "relevancia", utilize apenas um dos valores:
+                    - "Urgente/Importante"
+                    - "Média relevância"
+                    - "Baixa relevância"
+
+                    7. A justificativa da relevância deve possuir apenas uma frase.
+
+                    8. As tags devem conter entre 1 e 5 itens e utilizar apenas os seguintes valores:
+
+                    [
+                    "saúde",
+                    "educação",
+                    "segurança",
+                    "mobilidade",
+                    "transporte",
+                    "trânsito",
+                    "infraestrutura",
+                    "obras",
+                    "urbanismo",
+                    "habitação",
+                    "assistência_social",
+                    "cultura",
+                    "esporte",
+                    "lazer",
+                    "turismo",
+                    "meio_ambiente",
+                    "saneamento",
+                    "economia",
+                    "tributação",
+                    "comércio",
+                    "agricultura",
+                    "tecnologia",
+                    "acessibilidade",
+                    "juventude",
+                    "idosos",
+                    "mulheres",
+                    "crianças",
+                    "animais",
+                    "servidores",
+                    "transparência",
+                    "participação",
+                    "política",
+                    "legislação",
+                    "orçamento"
+                    ]
+
+                    9. NÃO escreva explicações.
+
+                    10. NÃO utilize Markdown.
+
+                    11. NÃO utilize ```json.
+
+                    12. Retorne APENAS um JSON válido exatamente neste formato:
+
                     {
-                      "titulo": "",
-                      "ideia_central": "",
-                      "localidades_afetadas": "",
-                      "status": "",
-                      "tags": [],
-                      "autoria": []
+                    "titulo": "",
+                    "data_publicacao": "",
+                    "status": "",
+                    "ideia_central": "",
+                    "localidades_afetadas": "",
+                    "quando_sera_executado": "",
+                    "como_sera_executado": "",
+                    "autoria": [],
+                    "relevancia": "",
+                    "justificativa_relevancia": "",
+                    "likes": 0,
+                    "dislikes": 0,
+                    "tags": []
                     }
                     """
                 }
             ]
         }]
     }
+    
+    print(f"[{archive_id}] Enviando PDF para o Gemini")
 
     ai_response = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY}",
-        json=payload,
-        timeout=60
-    )
+    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY.value}",
+    json=payload,
+    timeout=60
+)
 
     if not ai_response.ok:
-        print(ai_response.status_code)
+        print("STATUS:", ai_response.status_code)
+        print("RESPOSTA GEMINI:")
         print(ai_response.text)
-        ai_response.raise_for_status()
+
+    ai_response.raise_for_status()
+        
+    print(
+    f"[{archive_id}] Gemini respondeu {ai_response.status_code}"
+)
 
     result = ai_response.json()
+    
+    print(f"[{archive_id}] Resposta JSON recebida do Gemini")
 
     if not result.get("candidates"):
         raise Exception("Gemini retornou resposta vazia")
@@ -1492,6 +1261,13 @@ def extract_project_with_ai(archive_id, archive_data):
     text = text.replace("```json", "").replace("```", "").strip()
 
     projeto_data = json.loads(text)
+    
+    projeto_data["textoOriginalUrl"] = original_pdf
+    projeto_data["paginaOriginalUrl"] = archive_data["url"]
+    
+    print(f"[{archive_id}] Resposta do Gemini:")
+    print(text[:500])
+    print(f"[{archive_id}] JSON convertido com sucesso")
 
     projeto_data["archiveId"] = archive_id
     projeto_data["createdAt"] = SERVER_TIMESTAMP
@@ -1513,6 +1289,7 @@ def extract_project_with_ai(archive_id, archive_data):
         "relevancia": "",
         "justificativa_relevancia": "",
         "textoOriginalUrl": "",
+        "paginaOriginalUrl": "",
     }
 
     for key, default in defaults.items():
@@ -1549,13 +1326,86 @@ def extract_project_with_ai(archive_id, archive_data):
 
     if not isinstance(projeto_data["data_publicacao"], str):
         projeto_data["data_publicacao"] = ""
+        
+    print(f"[{archive_id}] Salvando projeto no Firestore")
 
     projeto_ref = db.collection("projetos").document()
     projeto_ref.set(projeto_data)
+    
+    print(f"[{archive_id}] Projeto salvo")
 
     return projeto_ref.id
 
 
+# ==================================================
+# POST /test_archive?id=<archive_id>
+# ==================================================
+
+@https_fn.on_request(
+    secrets=["GOOGLE_API_KEY"]
+)
+@enable_cors
+def test_archive(req):
+    db = get_db()
+
+    if req.method not in ["GET", "POST"]:
+        return https_fn.Response(
+            json.dumps({"error": "Method not allowed"}),
+            status=405,
+            content_type="application/json"
+        )
+
+    archive_id = req.args.get("id")
+
+    if not archive_id:
+        return https_fn.Response(
+            json.dumps({"error": "Missing id"}),
+            status=400,
+            content_type="application/json"
+        )
+
+    print("=" * 60)
+    print(f"[{archive_id}] TESTE INICIADO")
+
+    doc = db.collection("archive").document(archive_id).get()
+
+    if not doc.exists:
+        print(f"[{archive_id}] Documento não encontrado")
+        return https_fn.Response(
+            json.dumps({"error": "Archive not found"}),
+            status=404,
+            content_type="application/json"
+        )
+
+    try:
+        projeto_id = extract_project_with_ai(
+            archive_id,
+            doc.to_dict()
+        )
+
+        print(f"[{archive_id}] Projeto criado: {projeto_id}")
+
+        return https_fn.Response(
+            json.dumps({
+                "success": True,
+                "projectId": projeto_id
+            }),
+            content_type="application/json"
+        )
+
+    except Exception as e:
+        print(f"[{archive_id}] ERRO:")
+        print(type(e).__name__)
+        print(str(e))
+
+        return https_fn.Response(
+            json.dumps({
+                "success": False,
+                "error": str(e)
+            }),
+            status=500,
+            content_type="application/json"
+        )
 
 
 # =====================
@@ -1616,13 +1466,16 @@ def notify_new_project(event):
 
     message = messaging.Message(
         notification=messaging.Notification(
-            title=f"Novo projeto: {projeto['titulo']}",
-            body=projeto['ideia_central']
+            title=f"Novo projeto: {projeto.get('titulo', '')}",
+            body=projeto.get(
+                "ideia_central",
+                "Novo projeto publicado"
+            )
         ),
         topic="projects",
         data={
             "projectId": event.params["projectId"],
-            "titulo": projeto["titulo"],
+            "titulo": projeto.get("titulo", "")
         }
     )
 

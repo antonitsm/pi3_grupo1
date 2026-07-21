@@ -68,21 +68,37 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
 
             const SizedBox(height: 10),
 
-            const CircleAvatar(radius: 50, backgroundColor: Colors.black),
+            CircleAvatar(
+              radius: 90,
+              backgroundColor: Colors.black,
+              backgroundImage:
+                  widget.vereador["fotoUrl"] != null &&
+                      widget.vereador["fotoUrl"].toString().isNotEmpty
+                  ? NetworkImage(widget.vereador["fotoUrl"])
+                  : null,
+              child:
+                  widget.vereador["fotoUrl"] == null ||
+                      widget.vereador["fotoUrl"].toString().isEmpty
+                  ? const Icon(Icons.person, size: 50, color: Colors.white)
+                  : null,
+            ),
 
             const SizedBox(height: 10),
 
             Text(
               widget.vereador["nome"] as String,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
 
-            Text(widget.vereador["partido"] as String),
+            Text(widget.vereador["partido"] as String,
+            style: const TextStyle(fontSize: 18)),
 
             const SizedBox(height: 10),
 
-            // TODO: substituir por dado real do back-end (data início mandato)
-            const Text("Início do mandato: 2024"),
+            Text("Início do mandato: ${widget.vereador["inicio_mandato"]}",
+            style: const TextStyle(fontSize: 15)),
+            Text("Fim do mandato: ${widget.vereador["fim_mandato"]}",
+            style: const TextStyle(fontSize: 15)),
 
             const SizedBox(height: 15),
 
