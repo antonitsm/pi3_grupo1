@@ -1436,7 +1436,7 @@ def hello_world(event: scheduler_fn.ScheduledEvent) -> None:
 
     docs = (
         db.collection("archive")
-        .where("processed", "!=", True)
+        .where("processed", "==", False)
         .order_by("createdAt", direction=Query.DESCENDING)
         .limit(2)
         .stream()
