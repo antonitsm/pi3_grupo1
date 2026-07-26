@@ -86,42 +86,44 @@ class _VereadoresPageState extends State<VereadoresPage> {
                 IconButton(
                   icon: const Icon(Icons.tune, color: Color(0xFFCC3A00)),
                   onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              title: const Text("Mais projetos primeiro"),
-                              onTap: () {
-                                setState(() {
-                                  vereadoresFiltrados.sort(
-                                    (a, b) => quantidadeProjetos(
-                                      b["id"],
-                                    ).compareTo(quantidadeProjetos(a["id"])),
-                                  );
-                                });
-                                Navigator.pop(context);
-                              },
-                            ),
-                            ListTile(
-                              title: const Text("Menos projetos primeiro"),
-                              onTap: () {
-                                setState(() {
-                                  vereadoresFiltrados.sort(
-                                    (a, b) => quantidadeProjetos(
-                                      a["id"],
-                                    ).compareTo(quantidadeProjetos(b["id"])),
-                                  );
-                                });
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
+             showModalBottomSheet(
+  context: context,
+  builder: (context) {
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: const Text("Mais projetos primeiro"),
+            onTap: () {
+              setState(() {
+                vereadoresFiltrados.sort(
+                  (a, b) => quantidadeProjetos(
+                    b["id"],
+                  ).compareTo(quantidadeProjetos(a["id"])),
+                );
+              });
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: const Text("Menos projetos primeiro"),
+            onTap: () {
+              setState(() {
+                vereadoresFiltrados.sort(
+                  (a, b) => quantidadeProjetos(
+                    a["id"],
+                  ).compareTo(quantidadeProjetos(b["id"])),
+                );
+              });
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  },
+);
                   },
                 ),
 
