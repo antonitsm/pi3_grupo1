@@ -18,6 +18,7 @@ import requests
 import json
 import re
 import base64
+import time
 from functools import wraps
 
 
@@ -890,7 +891,7 @@ def populate_archive(req):
         try:
             response = requests.get(
                 url,
-                timeout=30,
+                timeout=90,
                 headers={
                     "User-Agent": "Mozilla/5.0"
                 }
@@ -1076,12 +1077,23 @@ def extract_project_with_ai(archive_id, archive_data):
     
     print(f"[{archive_id}] Iniciando extract_project_with_ai")
     
-    response = requests.get(
-        archive_data["url"],
-        timeout=30,
-        headers={"User-Agent": "Mozilla/5.0"}
-    )
-    response.raise_for_status()
+    for tentativa in range(3):
+        try:
+            response = requests.get(
+                archive_data["url"],
+                timeout=90,
+                headers={"User-Agent": "Mozilla/5.0"}
+            )
+            response.raise_for_status()
+            break
+
+        except requests.exceptions.RequestException as e:
+            print(f"[{archive_id}] Tentativa {tentativa + 1} falhou: {e}")
+
+            if tentativa == 2:
+                raise
+
+            time.sleep(10)
 
     print(f"[{archive_id}] Página baixada com sucesso")
     
@@ -1104,7 +1116,7 @@ def extract_project_with_ai(archive_id, archive_data):
     
     print(f"[{archive_id}] Baixando PDF")
 
-    pdf_response = requests.get(original_pdf, timeout=30)
+    pdf_response = requests.get(original_pdf, timeout=90)
     pdf_response.raise_for_status()
     
     print(
