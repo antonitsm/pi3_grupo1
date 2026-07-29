@@ -75,7 +75,7 @@ class _PartidosPageState extends State<PartidosPage> {
   }
 
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
 
@@ -111,6 +111,7 @@ class _PartidosPageState extends State<PartidosPage> {
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
+                      useSafeArea: true,
                       builder: (context) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,

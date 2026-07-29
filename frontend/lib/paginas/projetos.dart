@@ -143,6 +143,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
+                        useSafeArea: true,
                         builder: (context) {
                           return Column(
                             mainAxisSize: MainAxisSize.min,
