@@ -54,8 +54,6 @@ set_global_options(max_instances=10)
 initialize_app()
 
 GOOGLE_API_KEY = SecretParam("GOOGLE_API_KEY")
-#GOOGLE_API_KEY = ""
-
 
 def get_db():
     return firestore.client()
@@ -993,7 +991,7 @@ Lê o PDF do ato municipal, usa IA para extrair informações
 e cria um novo projeto automaticamente.
 """
 @https_fn.on_request(
-    secrets=["GOOGLE_API_KEY"]
+    secrets=[GOOGLE_API_KEY]
 )
 @enable_cors
 def process_archive(req):
@@ -1243,16 +1241,28 @@ def extract_project_with_ai(archive_id, archive_data):
     
     print(f"[{archive_id}] Enviando PDF para o Gemini")
 
+    valor = GOOGLE_API_KEY.value
+
+    print("repr:", repr(valor))
+    print("tipo:", type(valor))
+    print("len:", len(valor) if valor is not None else None)
+    
+    url = (
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    f"gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY.value}"
+)
+
+    print("URL termina com:", url[-25:])
+    
     ai_response = requests.post(
     f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY.value}",
     json=payload,
     timeout=60
 )
 
-    if not ai_response.ok:
-        print("STATUS:", ai_response.status_code)
-        print("RESPOSTA GEMINI:")
-        print(ai_response.text)
+    print("STATUS:", ai_response.status_code)
+    print("HEADERS:", ai_response.headers)
+    print("BODY:", ai_response.text)
 
     ai_response.raise_for_status()
         
@@ -1354,7 +1364,7 @@ def extract_project_with_ai(archive_id, archive_data):
 # ==================================================
 
 @https_fn.on_request(
-    secrets=["GOOGLE_API_KEY"]
+    secrets=[GOOGLE_API_KEY]
 )
 @enable_cors
 def test_archive(req):
@@ -1431,7 +1441,10 @@ class FakeRequest:
     def __init__(self, **args):
         self.args = args
 
-@scheduler_fn.on_schedule(schedule="every 24 hours")
+@scheduler_fn.on_schedule(
+    schedule="every 24 hours",
+    secrets=[GOOGLE_API_KEY]
+    )
 def hello_world(event: scheduler_fn.ScheduledEvent) -> None:
     print("Starting archive scheduler...")
 
