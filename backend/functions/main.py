@@ -1107,6 +1107,9 @@ def extract_project_with_ai(archive_id, archive_data):
         None
     )
     
+    if original_pdf is None:
+        original_pdf = next(iter(pdf_urls), None)
+    
     print(f"[{archive_id}] PDF escolhido: {original_pdf}")
 
     if not original_pdf:
@@ -1249,20 +1252,20 @@ def extract_project_with_ai(archive_id, archive_data):
     
     url = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
-    f"gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY.value}"
+    f"gemini-3.1-flash-lite:generateContent?key={valor}"
 )
 
     print("URL termina com:", url[-25:])
     
     ai_response = requests.post(
-    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY.value}",
+    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={valor}",
     json=payload,
     timeout=60
 )
 
     print("STATUS:", ai_response.status_code)
     print("HEADERS:", ai_response.headers)
-    print("BODY:", ai_response.text)
+    print(ai_response.json())
 
     ai_response.raise_for_status()
         
