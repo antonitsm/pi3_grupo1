@@ -128,6 +128,18 @@ class _ProjetosPageState extends State<ProjetosPage> {
                   "Projetos",
                   style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
                 ),
+
+                const SizedBox(height: 4),
+
+                const Text(
+                  "Leis, decretos e propostas • Itá, Santa Catarina",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ],
             ),
 
