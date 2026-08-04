@@ -5,6 +5,7 @@ import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
 
 import '../services/api_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class ProjetosPage extends StatefulWidget {
   const ProjetosPage({super.key});
@@ -32,7 +33,34 @@ class _ProjetosPageState extends State<ProjetosPage> {
   void initState() {
     super.initState();
 
+    FirebaseMessaging.onMessageOpenedApp.listen(abrirProjetoDaNotificacao);
+
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        abrirProjetoDaNotificacao(message);
+      }
+    });
+
     carregarProjetos();
+  }
+
+  void abrirProjetoDaNotificacao(RemoteMessage message) async {
+    final projectId = message.data["projectId"];
+
+    if (projectId == null) return;
+
+    try {
+      final projeto = await api.getProjetoPorId(projectId);
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ProjetoDetalhePage(projeto: projeto)),
+      );
+    } catch (e) {
+      print("Erro ao abrir projeto da notificação: $e");
+    }
   }
 
   Future<void> carregarProjetos() async {
@@ -115,6 +143,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
+                        useSafeArea: true,
                         builder: (context) {
                           return Column(
                             mainAxisSize: MainAxisSize.min,
@@ -302,38 +331,80 @@ class _ProjetosPageState extends State<ProjetosPage> {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          liked[index] = !liked[index];
+                      onTap: () async {
+                        try {
+                          final resposta = await api.reagirProjeto(
+                            projeto["id"].toString(),
+                            "like",
+                          );
 
-                          if (liked[index]) {
-                            disliked[index] = false;
-                          }
-                        });
+                          setState(() {
+                            liked[index] = !liked[index];
+
+                            if (liked[index]) {
+                              disliked[index] = false;
+                            }
+
+                            if (resposta["likes"] != null) {
+                              projeto["likes"] = resposta["likes"];
+                            }
+                          });
+                        } catch (e) {
+                          print("Erro no like: $e");
+                        }
                       },
 
-                      child: _reaction(
-                        Icons.thumb_up,
-                        liked[index] ? Colors.green : Colors.grey,
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_up,
+                            liked[index] ? Colors.green : Colors.grey,
+                          ),
+
+                          const SizedBox(width: 4),
+
+                          Text("${projeto["likes"] ?? 0}"),
+                        ],
                       ),
                     ),
 
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 20),
 
                     GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          disliked[index] = !disliked[index];
+                      onTap: () async {
+                        try {
+                          final resposta = await api.reagirProjeto(
+                            projeto["id"].toString(),
+                            "dislike",
+                          );
 
-                          if (disliked[index]) {
-                            liked[index] = false;
-                          }
-                        });
+                          setState(() {
+                            disliked[index] = !disliked[index];
+
+                            if (disliked[index]) {
+                              liked[index] = false;
+                            }
+
+                            if (resposta["dislikes"] != null) {
+                              projeto["dislikes"] = resposta["dislikes"];
+                            }
+                          });
+                        } catch (e) {
+                          print("Erro no dislike: $e");
+                        }
                       },
 
-                      child: _reaction(
-                        Icons.thumb_down,
-                        disliked[index] ? Colors.red : Colors.grey,
+                      child: Row(
+                        children: [
+                          _reaction(
+                            Icons.thumb_down,
+                            disliked[index] ? Colors.red : Colors.grey,
+                          ),
+
+                          const SizedBox(width: 4),
+
+                          Text("${projeto["dislikes"] ?? 0}"),
+                        ],
                       ),
                     ),
                   ],
@@ -345,17 +416,17 @@ class _ProjetosPageState extends State<ProjetosPage> {
       ),
     );
   }
+}
 
-  Widget _reaction(IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(6),
+Widget _reaction(IconData icon, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(6),
 
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(8),
+    ),
 
-      child: Icon(icon, color: Colors.white, size: 18),
-    );
-  }
+    child: Icon(icon, color: Colors.white, size: 18),
+  );
 }

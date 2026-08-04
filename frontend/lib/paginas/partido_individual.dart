@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
 import '../widgets/cardprojeto.dart';
+import 'vereador_individual.dart';
 
 import '../services/api_service.dart';
 
@@ -28,29 +29,44 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
   }
 
   Future<void> carregarDados() async {
-  final partidoId = widget.partido["id"];
+    final sigla = widget.partido["sigla"];
 
-  final vereadores = await api.getPartidoVereadores(partidoId);
+    final vereadores = await api.getVereadores();
 
-  final projetos = await api.getPartidoProjetos(partidoId);
+    final projetos = await api.getProjetos();
 
-  setState(() {
-    vereadoresDoPartido =
-        List<Map<String, dynamic>>.from(vereadores);
+    final vereadoresFiltrados = vereadores.where((v) {
+      return v["partido"] == sigla;
+    }).toList();
 
-    projetosDoPartido =
-        List<Map<String, dynamic>>.from(projetos);
-  });
-}
+    final nomesVereadores = vereadoresFiltrados
+        .map((v) => v["nome"] as String)
+        .toSet();
+
+    final projetosFiltrados = projetos.where((p) {
+      final autores = (p["autoria"] as List?) ?? [];
+
+      return autores.any((autor) => nomesVereadores.contains(autor));
+    }).toList();
+
+    setState(() {
+      vereadoresDoPartido = List<Map<String, dynamic>>.from(
+        vereadoresFiltrados,
+      );
+
+      projetosDoPartido = List<Map<String, dynamic>>.from(projetosFiltrados);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final sigla = widget.partido["sigla"] as String;
-
     final nome = widget.partido["nome"] as String;
+    final anoCriacao = widget.partido["ano_criacao"] ?? "Não informado";
+    final logoUrl = widget.partido["logoUrl"]?.toString();
+    final corHex = widget.partido["cor"]?.toString() ?? "#000000";
 
-    final anoCriacao =
-        widget.partido["ano_criacao"] ?? "Não informado";
+    final cor = Color(int.parse(corHex.replaceFirst("#", "0xFF")));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
@@ -88,18 +104,28 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
             const SizedBox(height: 16),
 
             Container(
+              width: 300,
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.symmetric(horizontal: 32),
               decoration: BoxDecoration(
-                color: const Color(0xFFF67F57),
+                border: Border.all(color: cor, width: 4),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 50,
-                    backgroundColor: Colors.black,
-                    child: Icon(Icons.group, size: 50, color: Colors.white),
+                    backgroundColor: Colors.white,
+                    backgroundImage: logoUrl != null && logoUrl.isNotEmpty
+                        ? NetworkImage(logoUrl)
+                        : null,
+                    child: logoUrl == null || logoUrl.isEmpty
+                        ? const Icon(
+                            Icons.groups,
+                            size: 50,
+                            color: Colors.black,
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -198,12 +224,48 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                                           final vereador =
                                               vereadoresDoPartido[index];
 
-                                          return ListTile(
-                                            leading: const CircleAvatar(
-                                              child: Icon(Icons.person),
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 5,
                                             ),
-                                            title: Text(
-                                              vereador["nome"] as String,
+                                            child: ListTile(
+                                              leading: CircleAvatar(
+                                                radius: 25,
+                                                backgroundImage:
+                                                    vereador["fotoUrl"] !=
+                                                            null &&
+                                                        vereador["fotoUrl"]
+                                                            .toString()
+                                                            .isNotEmpty
+                                                    ? NetworkImage(
+                                                        vereador["fotoUrl"],
+                                                      )
+                                                    : null,
+                                                child:
+                                                    vereador["fotoUrl"] ==
+                                                            null ||
+                                                        vereador["fotoUrl"]
+                                                            .toString()
+                                                            .isEmpty
+                                                    ? const Icon(Icons.person)
+                                                    : null,
+                                              ),
+
+                                              title: Text(
+                                                vereador["nome"] as String,
+                                              ),
+
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        VereadorIndividualPage(
+                                                          vereador: vereador,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
                                             ),
                                           );
                                         },

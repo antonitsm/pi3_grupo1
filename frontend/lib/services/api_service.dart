@@ -17,6 +17,45 @@ class ApiService {
     throw Exception("Erro ao carregar projetos");
   }
 
+  Future<Map<String, dynamic>> getProjetoPorId(String id) async {
+  final response = await http.get(
+    Uri.parse(
+      "https://projeto-ht6dkigglq-uc.a.run.app?id=$id",
+    ),
+  );
+
+  if (response.statusCode == 200) {
+    return Map<String, dynamic>.from(
+      jsonDecode(response.body),
+    );
+  }
+
+  throw Exception("Erro ao carregar projeto");
+}
+
+Future<Map<String, dynamic>> reagirProjeto(
+    String id,
+    String tipo,
+) async {
+  final response = await http.patch(
+    Uri.parse(
+      "https://us-central1-transparencia-municipal-4e915.cloudfunctions.net/projeto_reacao?id=$id",
+    ),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "tipo": tipo,
+    }),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception("Erro ao registrar reação");
+  }
+
+  return jsonDecode(response.body);
+}
+
   Future<List<dynamic>> getVereadores() async {
     final response = await http.get(
       Uri.parse(

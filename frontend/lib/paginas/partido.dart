@@ -45,24 +45,20 @@ class _PartidosPageState extends State<PartidosPage> {
   }
 
   Future<void> carregarPartidos() async {
-  final partidos = await api.getPartidos();
-  final vereadores = await api.getVereadores();
-  final projetos = await api.getProjetos();
+    final partidos = await api.getPartidos();
+    final vereadores = await api.getVereadores();
+    final projetos = await api.getProjetos();
 
-  setState(() {
-    todosPartidos = List<Map<String, dynamic>>.from(partidos);
+    setState(() {
+      todosPartidos = List<Map<String, dynamic>>.from(partidos);
 
-    todosVereadores = List<Map<String, dynamic>>.from(
-      vereadores,
-    );
+      todosVereadores = List<Map<String, dynamic>>.from(vereadores);
 
-    todosProjetos = List<Map<String, dynamic>>.from(
-      projetos,
-    );
+      todosProjetos = List<Map<String, dynamic>>.from(projetos);
 
-    partidosFiltrados = List.from(todosPartidos);
-  });
-}
+      partidosFiltrados = List.from(todosPartidos);
+    });
+  }
 
   void filtrarPartidos(String texto) {
     setState(() {
@@ -115,6 +111,7 @@ class _PartidosPageState extends State<PartidosPage> {
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
+                      useSafeArea: true,
                       builder: (context) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
@@ -258,6 +255,8 @@ class PartidoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final logoUrl = partido["logoUrl"] as String?;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -291,11 +290,19 @@ class PartidoCard extends StatelessWidget {
             Container(
               width: 60,
               height: 60,
-
               decoration: BoxDecoration(
-                color: Colors.blueGrey,
                 borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFFA1B4BE),
+                image: logoUrl != null && logoUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(logoUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
+              child: logoUrl == null || logoUrl.isEmpty
+                  ? const Icon(Icons.groups, color: Colors.white)
+                  : null,
             ),
 
             const SizedBox(width: 12),

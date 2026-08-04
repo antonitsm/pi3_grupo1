@@ -40,51 +40,65 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
 
   @override
   Widget build(BuildContext context) {
-    final projetos = (widget.vereador["projetos"] as List?) ?? [];
-
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFF9F9F9),
 
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: Stack(
-          children: [
-            const BarraSuperior(),
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              child: SafeArea(
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: Stack(children: [const BarraSuperior()]),
       ),
 
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.only(left: 12, top: 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12, top: 12),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ),
+            ),
 
-            const CircleAvatar(radius: 50, backgroundColor: Colors.black),
+            const SizedBox(height: 10),
+
+            CircleAvatar(
+              radius: 90,
+              backgroundColor: Colors.black,
+              backgroundImage:
+                  widget.vereador["fotoUrl"] != null &&
+                      widget.vereador["fotoUrl"].toString().isNotEmpty
+                  ? NetworkImage(widget.vereador["fotoUrl"])
+                  : null,
+              child:
+                  widget.vereador["fotoUrl"] == null ||
+                      widget.vereador["fotoUrl"].toString().isEmpty
+                  ? const Icon(Icons.person, size: 50, color: Colors.white)
+                  : null,
+            ),
 
             const SizedBox(height: 10),
 
             Text(
               widget.vereador["nome"] as String,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
 
-            Text(widget.vereador["partido"] as String),
+            Text(widget.vereador["partido"] as String,
+            style: const TextStyle(fontSize: 18)),
 
             const SizedBox(height: 10),
 
-            // TODO: substituir por dado real do back-end (data início mandato)
-            const Text("Início do mandato: 2024"),
+            Text("Início do mandato: ${widget.vereador["inicio_mandato"]}",
+            style: const TextStyle(fontSize: 15)),
+            Text("Fim do mandato: ${widget.vereador["fim_mandato"]}",
+            style: const TextStyle(fontSize: 15)),
 
             const SizedBox(height: 15),
 
@@ -92,16 +106,13 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color.fromARGB(255, 233, 233, 233),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(
                 children: [
                   Text(
-                    "${widget.vereador["projetos_aprovados"]} projetos aprovados",
-                  ),
-                  Text(
-                    "${projetos.length} projeto(s) vinculado(s)",
+                    "${projetosDoVereador.length} projeto(s) vinculado(s)",
                     style: const TextStyle(color: Colors.deepOrange),
                   ),
                 ],
