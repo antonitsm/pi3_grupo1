@@ -134,7 +134,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
-                    color: Colors.grey,
+                    color: Color(0xFF555555),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
