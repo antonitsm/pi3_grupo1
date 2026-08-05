@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/projeto_detalhe.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
+import './tema/app_text_styles.dart';
 
 import '../services/api_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -124,10 +125,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
               children: [
                 const SizedBox(height: 10),
 
-                const Text(
-                  "Projetos",
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
-                ),
+                const Text("Projetos", style: AppTextStyles.pageTitle),
 
                 const SizedBox(height: 4),
 
@@ -135,7 +133,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
                   "Leis, decretos e propostas • Itá, Santa Catarina",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: Colors.grey,
                     fontWeight: FontWeight.w400,
                   ),
@@ -291,7 +289,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
                 Expanded(
                   child: Text(
                     projeto["titulo"],
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: AppTextStyles.cardTitle,
                   ),
                 ),
 
@@ -312,7 +310,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
               projeto["ideia_central"],
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13),
+              style: AppTextStyles.body,
             ),
 
             const SizedBox(height: 10),
@@ -322,7 +320,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
               children: (projeto["tags"] as List)
                   .map(
                     (tag) => Chip(
-                      label: Text(tag),
+                      label: Text(tag, style: AppTextStyles.body),
                       backgroundColor: const Color(0xFFF67F57),
                     ),
                   )
@@ -335,10 +333,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
               children: [
-                Text(
-                  projeto["data_publicacao"],
-                  style: const TextStyle(fontSize: 12),
-                ),
+                Text(projeto["data_publicacao"], style: AppTextStyles.body),
 
                 Row(
                   children: [

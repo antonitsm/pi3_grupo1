@@ -1,7 +1,10 @@
-import '../widgets/cardprojeto.dart';
 import 'package:flutter/material.dart';
+
+import '../widgets/cardprojeto.dart';
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
+import './tema/app_text_styles.dart';
+
 import '../services/api_service.dart';
 
 class VereadorIndividualPage extends StatefulWidget {
@@ -87,18 +90,18 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
 
             Text(
               widget.vereador["nome"] as String,
-              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              style: AppTextStyles.pageTitle,
             ),
 
             Text(widget.vereador["partido"] as String,
-            style: const TextStyle(fontSize: 18)),
+            style: const TextStyle(fontSize: 20)),
 
             const SizedBox(height: 10),
 
             Text("Início do mandato: ${widget.vereador["inicio_mandato"]}",
-            style: const TextStyle(fontSize: 15)),
+            style: AppTextStyles.body),
             Text("Fim do mandato: ${widget.vereador["fim_mandato"]}",
-            style: const TextStyle(fontSize: 15)),
+            style: AppTextStyles.body),
 
             const SizedBox(height: 15),
 
@@ -123,7 +126,7 @@ class _VereadorIndividualPageState extends State<VereadorIndividualPage> {
 
             const Text(
               "PROJETOS:",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: AppTextStyles.cardTitle,
             ),
 
             ...projetosDoVereador.map(

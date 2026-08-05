@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
+import 'vereador_individual.dart';
+import './tema/app_text_styles.dart';
 
 import '../services/api_service.dart';
-
-import 'vereador_individual.dart';
 
 class VereadoresPage extends StatefulWidget {
   const VereadoresPage({super.key});
@@ -71,10 +71,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
           const SizedBox(height: 10),
 
           // TÍTULO
-          const Text(
-            "Vereadores",
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-          ),
+          const Text("Vereadores", style: AppTextStyles.pageTitle),
 
           const SizedBox(height: 20),
 
@@ -86,44 +83,44 @@ class _VereadoresPageState extends State<VereadoresPage> {
                 IconButton(
                   icon: const Icon(Icons.tune, color: Color(0xFFCC3A00)),
                   onPressed: () {
-             showModalBottomSheet(
-  context: context,
-  builder: (context) {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            title: const Text("Mais projetos primeiro"),
-            onTap: () {
-              setState(() {
-                vereadoresFiltrados.sort(
-                  (a, b) => quantidadeProjetos(
-                    b["id"],
-                  ).compareTo(quantidadeProjetos(a["id"])),
-                );
-              });
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            title: const Text("Menos projetos primeiro"),
-            onTap: () {
-              setState(() {
-                vereadoresFiltrados.sort(
-                  (a, b) => quantidadeProjetos(
-                    a["id"],
-                  ).compareTo(quantidadeProjetos(b["id"])),
-                );
-              });
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    );
-  },
-);
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return SafeArea(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                title: const Text("Mais projetos primeiro"),
+                                onTap: () {
+                                  setState(() {
+                                    vereadoresFiltrados.sort(
+                                      (a, b) => quantidadeProjetos(
+                                        b["id"],
+                                      ).compareTo(quantidadeProjetos(a["id"])),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              ListTile(
+                                title: const Text("Menos projetos primeiro"),
+                                onTap: () {
+                                  setState(() {
+                                    vereadoresFiltrados.sort(
+                                      (a, b) => quantidadeProjetos(
+                                        a["id"],
+                                      ).compareTo(quantidadeProjetos(b["id"])),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
                   },
                 ),
 
@@ -208,17 +205,13 @@ class _VereadoresPageState extends State<VereadoresPage> {
                         ),
 
                         const SizedBox(width: 16),
-
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 vereador["nome"] as String,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                                style: AppTextStyles.cardTitle,
                               ),
                               const SizedBox(height: 4),
                               Text(vereador["partido"] as String),

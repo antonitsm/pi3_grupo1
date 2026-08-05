@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
+import '../paginas/tema/app_text_styles.dart';
+
 import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -64,16 +67,13 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
                 const SizedBox(height: 10),
 
-                Text(
-                  widget.projeto["titulo"],
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(widget.projeto["titulo"], style: AppTextStyles.pageTitle),
 
                 const SizedBox(height: 5),
-                Text("Publicação: ${widget.projeto["data_publicacao"]}"),
+                Text(
+                  "Publicação: ${widget.projeto["data_publicacao"]}",
+                  style: AppTextStyles.caption,
+                ),
 
                 const SizedBox(height: 20),
 
@@ -95,37 +95,41 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Resumo IA ✨",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                      const Text("Resumo IA ✨", style: AppTextStyles.cardTitle),
 
                       const SizedBox(height: 12),
 
-                      Text("🎯 Objetivo\n${widget.projeto["ideia_central"]}"),
+                      Text(
+                        "🎯 Objetivo\n${widget.projeto["ideia_central"]}",
+                        style: AppTextStyles.body,
+                      ),
 
                       const SizedBox(height: 10),
 
                       Text(
                         "📍 Localidades afetadas\n${widget.projeto["localidades_afetadas"]}",
+                        style: AppTextStyles.body,
                       ),
 
                       const SizedBox(height: 10),
 
                       Text(
                         "📅 Quando será executado\n${widget.projeto["quando_sera_executado"]}",
+                        style: AppTextStyles.body,
                       ),
 
                       const SizedBox(height: 10),
 
                       Text(
                         "⚙️ Como será executado\n${widget.projeto["como_sera_executado"]}",
+                        style: AppTextStyles.body,
                       ),
 
                       const SizedBox(height: 10),
 
                       Text(
                         "👤 Autoria\n${(widget.projeto["autoria"] as List).join(", ")}",
+                        style: AppTextStyles.body,
                       ),
 
                       const SizedBox(height: 15),
@@ -145,8 +149,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                           children: [
                             Text(
                               "Relevância: ${widget.projeto["relevancia"]}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.button.copyWith(
                                 color: Colors.white,
                               ),
                             ),
@@ -155,7 +158,9 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
                             Text(
                               widget.projeto["justificativa_relevancia"],
-                              style: const TextStyle(color: Colors.white),
+                              style: AppTextStyles.body.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
                           ],
                         ),
@@ -190,7 +195,10 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                         }
                       }
                     },
-                    child: const Text("Acesse na íntegra aqui!"),
+                    child: Text(
+                      "Acesse na íntegra aqui!",
+                      style: AppTextStyles.button.copyWith(color: Colors.white),
+                    ),
                   ),
                 ),
 
@@ -198,7 +206,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
                 const Text(
                   "Vereadores responsáveis:",
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  style: AppTextStyles.body,
                 ),
 
                 const SizedBox(height: 10),
@@ -244,7 +252,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                         children: [
                           _reaction(
                             Icons.thumb_up,
-                            liked ? Colors.green : Colors.transparent,
+                            liked ? Colors.green : null,
                           ),
 
                           const SizedBox(width: 5),
@@ -284,7 +292,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                         children: [
                           _reaction(
                             Icons.thumb_down,
-                            disliked ? Colors.red : Colors.transparent,
+                            disliked ? Colors.red : null,
                           ),
 
                           const SizedBox(width: 5),
@@ -320,14 +328,17 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
     );
   }
 
-  Widget _reaction(IconData icon, Color color) {
+  Widget _reaction(IconData icon, Color? color) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? const Color(0xFFE0E0E0), // cinza quando não selecionado
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(icon, color: Colors.white),
+      child: Icon(
+        icon,
+        color: color == null ? Colors.grey.shade700 : Colors.white,
+      ),
     );
   }
 }

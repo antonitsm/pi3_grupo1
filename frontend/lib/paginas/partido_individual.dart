@@ -4,6 +4,7 @@ import '../widgets/barra_superior.dart';
 import '../widgets/rodape.dart';
 import '../widgets/cardprojeto.dart';
 import 'vereador_individual.dart';
+import './tema/app_text_styles.dart';
 
 import '../services/api_service.dart';
 
@@ -93,7 +94,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                 child: Text(
                   sigla,
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFC33505),
                   ),
@@ -123,21 +124,18 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                         ? const Icon(
                             Icons.groups,
                             size: 50,
-                            color: Colors.black,
+                            color: Color(0xFF151515),
                           )
                         : null,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     nome,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: AppTextStyles.cardTitle,
                     textAlign: TextAlign.center,
                   ),
-                  Text(sigla),
-                  Text("Desde $anoCriacao"),
+                  Text(sigla, style: AppTextStyles.body),
+                  Text("Desde $anoCriacao", style: AppTextStyles.body),
                 ],
               ),
             ),
@@ -163,7 +161,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                   Expanded(
                     child: Text(
                       "${vereadoresDoPartido.length} vereador(es) na câmara",
-                      style: const TextStyle(fontSize: 14),
+                      style: AppTextStyles.body,
                     ),
                   ),
                   ElevatedButton(
@@ -208,10 +206,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
 
                                     Text(
                                       "Vereadores do $sigla",
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: AppTextStyles.cardTitle
                                     ),
 
                                     const SizedBox(height: 12),
@@ -296,7 +291,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Confira os projetos de lei do $sigla:",
-                  style: const TextStyle(fontSize: 16),
+                  style: AppTextStyles.button.copyWith(color: Colors.white)
                 ),
               ),
             ),

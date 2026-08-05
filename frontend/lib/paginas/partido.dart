@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'partido_individual.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
+import './tema/app_text_styles.dart';
 
 import '../services/api_service.dart';
 
@@ -87,16 +88,7 @@ class _PartidosPageState extends State<PartidosPage> {
           const SizedBox(height: 10),
 
           // TÍTULO
-          const Center(
-            child: Text(
-              "Partidos",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          ),
+          const Center(child: Text("Partidos", style: AppTextStyles.pageTitle)),
 
           const SizedBox(height: 28),
 
@@ -312,23 +304,18 @@ class PartidoCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-                  Text(
-                    partido["sigla"],
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  Text(partido["sigla"], style: AppTextStyles.cardTitle),
 
                   const SizedBox(height: 4),
 
-                  Text(partido["nome"]),
+                  Text(partido["nome"], style: AppTextStyles.body),
 
                   const SizedBox(height: 8),
 
                   Text(
                     "$quantidadeProjetos projetos • "
                     "$quantidadeVereadores vereadores",
+                    style: AppTextStyles.body,
                   ),
                 ],
               ),

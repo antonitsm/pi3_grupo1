@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
           width: 180,
         ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             const Text(
               'Visão Cidadã',

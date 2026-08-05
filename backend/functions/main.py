@@ -104,7 +104,11 @@ def projetos(req):
         )
 
     elif req.method == "GET":
-        docs = db.collection("projetos").stream()
+        docs = (
+            db.collection("projetos")
+            .order_by("createdAt", direction=Query.DESCENDING)
+            .stream()
+        )
 
         data = [
             {
