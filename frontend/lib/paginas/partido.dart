@@ -33,6 +33,7 @@ class PartidosPage extends StatefulWidget {
 class _PartidosPageState extends State<PartidosPage> {
   final ApiService api = ApiService();
 
+  bool carregando = true;
   List<Map<String, dynamic>> todosPartidos = [];
   List<Map<String, dynamic>> todosVereadores = [];
   List<Map<String, dynamic>> todosProjetos = [];
@@ -46,18 +47,21 @@ class _PartidosPageState extends State<PartidosPage> {
   }
 
   Future<void> carregarPartidos() async {
+    setState(() {
+      carregando = true;
+    });
+
     final partidos = await api.getPartidos();
     final vereadores = await api.getVereadores();
     final projetos = await api.getProjetos();
 
     setState(() {
       todosPartidos = List<Map<String, dynamic>>.from(partidos);
-
       todosVereadores = List<Map<String, dynamic>>.from(vereadores);
-
       todosProjetos = List<Map<String, dynamic>>.from(projetos);
-
       partidosFiltrados = List.from(todosPartidos);
+
+      carregando = false;
     });
   }
 
@@ -192,36 +196,50 @@ class _PartidosPageState extends State<PartidosPage> {
 
           // LISTA
           Expanded(
-            child: ListView.builder(
-              itemCount: partidosFiltrados.length,
-              itemBuilder: (context, index) {
-                final partido = partidosFiltrados[index];
+            child: carregando
+                ? const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: Color(0xFFCC3A00)),
+                        SizedBox(height: 16),
+                        Text(
+                          "Carregando partidos...",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: partidosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final partido = partidosFiltrados[index];
 
-                final sigla = partido["sigla"];
+                      final sigla = partido["sigla"];
 
-                final vereadoresDoPartido = todosVereadores
-                    .where((v) => v["partido"] == sigla)
-                    .toList();
+                      final vereadoresDoPartido = todosVereadores
+                          .where((v) => v["partido"] == sigla)
+                          .toList();
 
-                final nomesVereadores = vereadoresDoPartido
-                    .map((v) => v["nome"] as String)
-                    .toSet();
+                      final nomesVereadores = vereadoresDoPartido
+                          .map((v) => v["nome"] as String)
+                          .toSet();
 
-                final projetosDoPartido = todosProjetos.where((p) {
-                  final autores = (p["autoria"] as List?) ?? [];
+                      final projetosDoPartido = todosProjetos.where((p) {
+                        final autores = (p["autoria"] as List?) ?? [];
 
-                  return autores.any(
-                    (autor) => nomesVereadores.contains(autor),
-                  );
-                }).toList();
+                        return autores.any(
+                          (autor) => nomesVereadores.contains(autor),
+                        );
+                      }).toList();
 
-                return PartidoCard(
-                  partido: partido,
-                  quantidadeProjetos: projetosDoPartido.length,
-                  quantidadeVereadores: vereadoresDoPartido.length,
-                );
-              },
-            ),
+                      return PartidoCard(
+                        partido: partido,
+                        quantidadeProjetos: projetosDoPartido.length,
+                        quantidadeVereadores: vereadoresDoPartido.length,
+                      );
+                    },
+                  ),
           ),
         ],
       ),

@@ -29,6 +29,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
   String tagSelecionada = 'Todos';
 
   bool maisAntigoPrimeiro = false;
+  bool carregando = true;
 
   @override
   void initState() {
@@ -65,15 +66,20 @@ class _ProjetosPageState extends State<ProjetosPage> {
   }
 
   Future<void> carregarProjetos() async {
+    setState(() {
+      carregando = true;
+    });
+
     final projetos = await api.getProjetos();
 
     setState(() {
       todosProjetos = List<Map<String, dynamic>>.from(projetos);
-
       projetosFiltrados = List.from(todosProjetos);
 
       liked = List.generate(todosProjetos.length, (_) => false);
       disliked = List.generate(todosProjetos.length, (_) => false);
+
+      carregando = false;
     });
   }
 
@@ -230,15 +236,31 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
             // LISTA
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-
-                children: List.generate(
-                  projetosFiltrados.length,
-                  (index) =>
-                      _card(context, index, projeto: projetosFiltrados[index]),
-                ),
-              ),
+              child: carregando
+                  ? const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(color: Color(0xFFCC3A00)),
+                          SizedBox(height: 16),
+                          Text(
+                            "Carregando projetos...",
+                            style: AppTextStyles.body,
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: List.generate(
+                        projetosFiltrados.length,
+                        (index) => _card(
+                          context,
+                          index,
+                          projeto: projetosFiltrados[index],
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),

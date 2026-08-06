@@ -23,10 +23,17 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
   bool liked = false;
   bool disliked = false;
+  bool enviandoReacao = false;
+  int likes = 0;
+  int dislikes = 0;
 
   @override
   void initState() {
     super.initState();
+
+    likes = widget.projeto["likes"] ?? 0;
+    dislikes = widget.projeto["dislikes"] ?? 0;
+
     carregarVereadores();
   }
 
@@ -225,28 +232,56 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     GestureDetector(
-                      onTap: () async {
-                        try {
-                          final resposta = await api.reagirProjeto(
-                            widget.projeto["id"].toString(),
-                            "like",
-                          );
+                      onTap: enviandoReacao
+                          ? null
+                          : () async {
+                              setState(() {
+                                enviandoReacao = true;
 
-                          setState(() {
-                            liked = !liked;
+                                if (liked) {
+                                  liked = false;
+                                  likes--;
+                                } else {
+                                  liked = true;
+                                  likes++;
 
-                            if (liked) {
-                              disliked = false;
-                            }
+                                  if (disliked) {
+                                    disliked = false;
+                                    dislikes--;
+                                  }
+                                }
+                              });
 
-                            if (resposta["likes"] != null) {
-                              widget.projeto["likes"] = resposta["likes"];
-                            }
-                          });
-                        } catch (e) {
-                          print("Erro no like: $e");
-                        }
-                      },
+                              try {
+                                final resposta = await api.reagirProjeto(
+                                  widget.projeto["id"].toString(),
+                                  "like",
+                                );
+
+                                setState(() {
+                                  if (resposta["likes"] != null) {
+                                    likes = resposta["likes"];
+                                  }
+                                });
+                              } catch (e) {
+                                // desfaz caso dê erro
+                                setState(() {
+                                  if (liked) {
+                                    liked = false;
+                                    likes--;
+                                  } else {
+                                    liked = true;
+                                    likes++;
+                                  }
+                                });
+
+                                print("Erro no like: $e");
+                              } finally {
+                                setState(() {
+                                  enviandoReacao = false;
+                                });
+                              }
+                            },
 
                       child: Row(
                         children: [
@@ -257,7 +292,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
                           const SizedBox(width: 5),
 
-                          Text("${widget.projeto["likes"] ?? 0}"),
+                          Text("$likes"),
                         ],
                       ),
                     ),
@@ -265,28 +300,56 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                     const SizedBox(width: 20),
 
                     GestureDetector(
-                      onTap: () async {
-                        try {
-                          final resposta = await api.reagirProjeto(
-                            widget.projeto["id"].toString(),
-                            "dislike",
-                          );
+                      onTap: enviandoReacao
+                          ? null
+                          : () async {
+                              setState(() {
+                                enviandoReacao = true;
 
-                          setState(() {
-                            disliked = !disliked;
+                                if (disliked) {
+                                  disliked = false;
+                                  dislikes--;
+                                } else {
+                                  disliked = true;
+                                  dislikes++;
 
-                            if (disliked) {
-                              liked = false;
-                            }
+                                  if (liked) {
+                                    liked = false;
+                                    likes--;
+                                  }
+                                }
+                              });
 
-                            if (resposta["dislikes"] != null) {
-                              widget.projeto["dislikes"] = resposta["dislikes"];
-                            }
-                          });
-                        } catch (e) {
-                          print("Erro no dislike: $e");
-                        }
-                      },
+                              try {
+                                final resposta = await api.reagirProjeto(
+                                  widget.projeto["id"].toString(),
+                                  "dislike",
+                                );
+
+                                setState(() {
+                                  if (resposta["dislikes"] != null) {
+                                    dislikes = resposta["dislikes"];
+                                  }
+                                });
+                              } catch (e) {
+                                print("Erro no dislike: $e");
+
+                                // desfaz caso falhe
+                                setState(() {
+                                  if (disliked) {
+                                    disliked = false;
+                                    dislikes--;
+                                  } else {
+                                    disliked = true;
+                                    dislikes++;
+                                  }
+                                });
+                              } finally {
+                                setState(() {
+                                  enviandoReacao = false;
+                                });
+                              }
+                            },
 
                       child: Row(
                         children: [
@@ -297,7 +360,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
                           const SizedBox(width: 5),
 
-                          Text("${widget.projeto["dislikes"] ?? 0}"),
+                          Text("$dislikes"),
                         ],
                       ),
                     ),

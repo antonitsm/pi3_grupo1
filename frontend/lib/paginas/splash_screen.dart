@@ -14,8 +14,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
+    print("Splash iniciou");
     Timer(const Duration(seconds: 3), () {
+      print("Indo para Projetos");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
