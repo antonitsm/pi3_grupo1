@@ -6,6 +6,7 @@ import '../widgets/barra_superior.dart';
 import './tema/app_text_styles.dart';
 
 import '../services/api_service.dart';
+import 'package:intl/intl.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class ProjetosPage extends StatefulWidget {
@@ -72,8 +73,26 @@ class _ProjetosPageState extends State<ProjetosPage> {
 
     final projetos = await api.getProjetos();
 
+    final listaProjetos = List<Map<String, dynamic>>.from(projetos);
+
+    listaProjetos.sort((a, b) {
+      final dataA =
+          DateTime.tryParse(
+            a["data_publicacao"].toString().replaceAll(" ", "T"),
+          ) ??
+          DateTime(1900);
+
+      final dataB =
+          DateTime.tryParse(
+            b["data_publicacao"].toString().replaceAll(" ", "T"),
+          ) ??
+          DateTime(1900);
+
+      return dataB.compareTo(dataA); // mais novo primeiro
+    });
+
     setState(() {
-      todosProjetos = List<Map<String, dynamic>>.from(projetos);
+      todosProjetos = listaProjetos;
       projetosFiltrados = List.from(todosProjetos);
 
       liked = List.generate(todosProjetos.length, (_) => false);
@@ -111,6 +130,38 @@ class _ProjetosPageState extends State<ProjetosPage> {
             tags.contains(busca);
       }).toList();
     });
+  }
+
+  String formatarData(dynamic data) {
+    if (data == null || data.toString().isEmpty) {
+      return "";
+    }
+
+    try {
+      final dataConvertida = DateTime.parse(
+        data.toString().replaceAll(" ", "T"),
+      );
+
+      return DateFormat("dd/MM/yyyy").format(dataConvertida);
+    } catch (e) {
+      return "";
+    }
+  }
+
+  bool projetoEhNovo(dynamic data) {
+    if (data == null || data.toString().isEmpty) {
+      return false;
+    }
+
+    try {
+      final dataProjeto = DateTime.parse(data.toString().replaceAll(" ", "T"));
+
+      final diferenca = DateTime.now().difference(dataProjeto);
+
+      return diferenca.inDays <= 2;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
@@ -169,36 +220,62 @@ class _ProjetosPageState extends State<ProjetosPage> {
                                 onTap: () {
                                   setState(() {
                                     projetosFiltrados.sort(
-                                      (a, b) =>
-                                          b["likes"].compareTo(a["likes"]),
+                                      (a, b) => (b["likes"] ?? 0).compareTo(
+                                        a["likes"] ?? 0,
+                                      ),
                                     );
                                   });
+
                                   Navigator.pop(context);
                                 },
                               ),
+
                               ListTile(
                                 title: const Text("Mais novos"),
                                 onTap: () {
                                   setState(() {
-                                    projetosFiltrados.sort(
-                                      (a, b) => b["data_publicacao"].compareTo(
-                                        a["data_publicacao"],
-                                      ),
-                                    );
+                                    projetosFiltrados.sort((a, b) {
+                                      final dataA =
+                                          DateTime.tryParse(
+                                            a["data_publicacao"].toString(),
+                                          ) ??
+                                          DateTime(1900);
+
+                                      final dataB =
+                                          DateTime.tryParse(
+                                            b["data_publicacao"].toString(),
+                                          ) ??
+                                          DateTime(1900);
+
+                                      return dataB.compareTo(dataA);
+                                    });
                                   });
+
                                   Navigator.pop(context);
                                 },
                               ),
+
                               ListTile(
                                 title: const Text("Mais antigos"),
                                 onTap: () {
                                   setState(() {
-                                    projetosFiltrados.sort(
-                                      (a, b) => a["data_publicacao"].compareTo(
-                                        b["data_publicacao"],
-                                      ),
-                                    );
+                                    projetosFiltrados.sort((a, b) {
+                                      final dataA =
+                                          DateTime.tryParse(
+                                            a["data_publicacao"].toString(),
+                                          ) ??
+                                          DateTime(1900);
+
+                                      final dataB =
+                                          DateTime.tryParse(
+                                            b["data_publicacao"].toString(),
+                                          ) ??
+                                          DateTime(1900);
+
+                                      return dataA.compareTo(dataB);
+                                    });
                                   });
+
                                   Navigator.pop(context);
                                 },
                               ),
@@ -315,11 +392,11 @@ class _ProjetosPageState extends State<ProjetosPage> {
                   ),
                 ),
 
-                if (index > 3)
+                if (projetoEhNovo(projeto["data_publicacao"]))
                   const Text(
                     "NEW",
                     style: TextStyle(
-                      color: const Color(0xFFCC3A00),
+                      color: Color(0xFFCC3A00),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -355,7 +432,10 @@ class _ProjetosPageState extends State<ProjetosPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
               children: [
-                Text(projeto["data_publicacao"], style: AppTextStyles.body),
+                Text(
+                  formatarData(projeto["data_publicacao"]),
+                  style: AppTextStyles.body,
+                ),
 
                 Row(
                   children: [

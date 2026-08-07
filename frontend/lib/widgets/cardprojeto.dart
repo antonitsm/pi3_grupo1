@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'projeto_detalhe.dart';
+
 import '../services/api_service.dart';
+import 'package:intl/intl.dart';
 
 class CardProjeto extends StatefulWidget {
   final Map<String, dynamic> projeto;
@@ -16,6 +18,20 @@ class _CardProjetoState extends State<CardProjeto> {
 
   bool liked = false;
   bool disliked = false;
+
+  String formatarDataPublicacao(dynamic data) {
+    if (data == null || data.toString().isEmpty) {
+      return "";
+    }
+
+    try {
+      final dataConvertida = DateTime.parse(data.toString());
+
+      return DateFormat("dd/MM/yyyy").format(dataConvertida);
+    } catch (e) {
+      return "";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +97,7 @@ class _CardProjetoState extends State<CardProjeto> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.projeto["data_publicacao"],
+                  formatarDataPublicacao(widget.projeto["data_publicacao"]),
                   style: const TextStyle(fontSize: 12),
                 ),
 

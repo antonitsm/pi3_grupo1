@@ -64,6 +64,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
     final sigla = widget.partido["sigla"] as String;
     final nome = widget.partido["nome"] as String;
     final anoCriacao = widget.partido["ano_criacao"] ?? "Não informado";
+    final numero = widget.partido["numero"]?.toString();
     final logoUrl = widget.partido["logoUrl"]?.toString();
     final corHex = widget.partido["cor"]?.toString() ?? "#000000";
 
@@ -136,6 +137,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                   ),
                   Text(sigla, style: AppTextStyles.body),
                   Text("Desde $anoCriacao", style: AppTextStyles.body),
+                  Text("Número: $numero", style: AppTextStyles.body),
                 ],
               ),
             ),
@@ -206,7 +208,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
 
                                     Text(
                                       "Vereadores do $sigla",
-                                      style: AppTextStyles.cardTitle
+                                      style: AppTextStyles.cardTitle,
                                     ),
 
                                     const SizedBox(height: 12),
@@ -282,7 +284,6 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
 
             Padding(
@@ -291,7 +292,7 @@ class _PartidoIndividualPageState extends State<PartidoIndividualPage> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Confira os projetos de lei do $sigla:",
-                  style: AppTextStyles.button.copyWith(color: Colors.white)
+                  style: AppTextStyles.cardTitle,
                 ),
               ),
             ),

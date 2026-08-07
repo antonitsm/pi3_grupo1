@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../widgets/rodape.dart';
 import '../widgets/barra_superior.dart';
 import '../paginas/tema/app_text_styles.dart';
+import '../paginas/vereador_individual.dart';
 
 import '../services/api_service.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProjetoDetalhePage extends StatefulWidget {
@@ -52,6 +54,34 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
     });
   }
 
+  String formatarData(dynamic data) {
+    if (data == null || data.toString().isEmpty) {
+      return "";
+    }
+
+    try {
+      final dataConvertida = DateTime.parse(data.toString());
+
+      return DateFormat("dd/MM/yyyy").format(dataConvertida);
+    } catch (e) {
+      return data.toString();
+    }
+  }
+
+  bool projetoEhNovo(dynamic data) {
+    if (data == null || data.toString().isEmpty) {
+      return false;
+    }
+
+    try {
+      final dataProjeto = DateTime.parse(data.toString());
+
+      return DateTime.now().difference(dataProjeto).inHours <= 48;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,7 +108,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
                 const SizedBox(height: 5),
                 Text(
-                  "Publicação: ${widget.projeto["data_publicacao"]}",
+                  "Publicação: ${formatarData(widget.projeto["data_publicacao"])}",
                   style: AppTextStyles.caption,
                 ),
 
@@ -219,8 +249,8 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                 const SizedBox(height: 10),
 
                 Wrap(
-                  spacing: 20,
-                  runSpacing: 15,
+                  spacing: 30,
+                  runSpacing: 20,
                   children: vereadoresProjeto
                       .map((vereador) => _vereador(vereador))
                       .toList(),
@@ -375,19 +405,58 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
   }
 
   Widget _vereador(Map<String, dynamic> vereador) {
-    return Column(
-      children: [
-        const CircleAvatar(radius: 30, backgroundColor: Colors.black),
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => VereadorIndividualPage(vereador: vereador),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.grey.shade300,
+              backgroundImage:
+                  vereador["fotoUrl"] != null &&
+                      vereador["fotoUrl"].toString().isNotEmpty
+                  ? NetworkImage(vereador["foto"])
+                  : null,
+              child:
+                  vereador["fotoUrl"] == null ||
+                      vereador["fotoUrl"].toString().isEmpty
+                  ? const Icon(Icons.person, size: 40)
+                  : null,
+            ),
 
-        const SizedBox(height: 6),
+            const SizedBox(height: 10),
 
-        Text(vereador["nome"], style: const TextStyle(fontSize: 12)),
+            SizedBox(
+              width: 110,
+              child: Text(
+                vereador["nome"],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
 
-        Text(
-          vereador["partido"],
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
+            const SizedBox(height: 4),
+
+            Text(
+              vereador["partido"],
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

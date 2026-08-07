@@ -19,6 +19,7 @@ import json
 import re
 import base64
 import time
+from datetime import datetime
 from functools import wraps
 
 
@@ -1160,7 +1161,7 @@ def extract_project_with_ai(archive_id, archive_data):
                     5. Preencha os seguintes campos:
 
                     - titulo
-                    - data_publicacao
+                    - data_publicacao (utilize obrigatoriamente o formato YYYY-MM-DD. Exemplo: 2026-08-06. Caso a data não possa ser identificada, retorne "")
                     - status
                     - ideia_central
                     - localidades_afetadas
@@ -1222,8 +1223,10 @@ def extract_project_with_ai(archive_id, archive_data):
                     10. NÃO utilize Markdown.
 
                     11. NÃO utilize ```json.
+                    
+                    12. O campo data_publicacao deve ser retornado exclusivamente no formato ISO (YYYY-MM-DD). Nunca utilize DD/MM/YYYY.
 
-                    12. Retorne APENAS um JSON válido exatamente neste formato:
+                    13. Retorne APENAS um JSON válido exatamente neste formato:
 
                     {
                     "titulo": "",
@@ -1290,10 +1293,23 @@ def extract_project_with_ai(archive_id, archive_data):
     text = text.replace("```json", "").replace("```", "").strip()
 
     projeto_data = json.loads(text)
-    
+
     projeto_data["textoOriginalUrl"] = original_pdf
     projeto_data["paginaOriginalUrl"] = archive_data["url"]
-    
+
+    # Converter data_publicacao para Timestamp do Firestore
+    if projeto_data.get("data_publicacao"):
+        try:
+            projeto_data["data_publicacao"] = datetime.strptime(
+                projeto_data["data_publicacao"],
+                "%Y-%m-%d"
+            )
+        except ValueError:
+            projeto_data["data_publicacao"] = None
+    else:
+        projeto_data["data_publicacao"] = None
+        
+        
     print(f"[{archive_id}] Resposta do Gemini:")
     print(text[:500])
     print(f"[{archive_id}] JSON convertido com sucesso")
@@ -1353,11 +1369,32 @@ def extract_project_with_ai(archive_id, archive_data):
     except (TypeError, ValueError):
         projeto_data["dislikes"] = 0
 
-    if not isinstance(projeto_data["data_publicacao"], str):
-        projeto_data["data_publicacao"] = ""
+    if projeto_data["data_publicacao"] is None:
+        projeto_data["data_publicacao"] = None
         
     print(f"[{archive_id}] Salvando projeto no Firestore")
+    
+    AUTORES_COLETIVOS = {
+        "câmara municipal de vereadores",
+        "câmara de vereadores",
+        "câmara municipal"
+    }
 
+    autoria = [
+        a.strip()
+        for a in projeto_data.get("autoria", [])
+        if isinstance(a, str)
+    ]
+
+    if any(a.lower() in AUTORES_COLETIVOS for a in autoria):
+        vereadores = db.collection("vereadores").stream()
+
+        projeto_data["autoria"] = [
+            vereador.to_dict()["nome"]
+            for vereador in vereadores
+        ]
+        
+        
     projeto_ref = db.collection("projetos").document()
     projeto_ref.set(projeto_data)
     

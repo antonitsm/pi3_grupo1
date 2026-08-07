@@ -58,10 +58,10 @@ class _VereadoresPageState extends State<VereadoresPage> {
     });
   }
 
-  int quantidadeProjetos(String vereadorId) {
+  int quantidadeProjetos(String nomeVereador) {
     return todosProjetos.where((projeto) {
-      final autores = (projeto["autoriaIds"] as List?) ?? [];
-      return autores.contains(vereadorId);
+      final autores = (projeto["autoria"] as List?) ?? [];
+      return autores.contains(nomeVereador);
     }).length;
   }
 
@@ -102,8 +102,8 @@ class _VereadoresPageState extends State<VereadoresPage> {
                                   setState(() {
                                     vereadoresFiltrados.sort(
                                       (a, b) => quantidadeProjetos(
-                                        b["id"],
-                                      ).compareTo(quantidadeProjetos(a["id"])),
+                                        b["nome"],
+                                      ).compareTo(quantidadeProjetos(a["nome"])),
                                     );
                                   });
                                   Navigator.pop(context);
@@ -115,8 +115,8 @@ class _VereadoresPageState extends State<VereadoresPage> {
                                   setState(() {
                                     vereadoresFiltrados.sort(
                                       (a, b) => quantidadeProjetos(
-                                        a["id"],
-                                      ).compareTo(quantidadeProjetos(b["id"])),
+                                        a["nome"],
+                                      ).compareTo(quantidadeProjetos(b["nome"])),
                                     );
                                   });
                                   Navigator.pop(context);
@@ -240,7 +240,7 @@ class _VereadoresPageState extends State<VereadoresPage> {
                                     Text(vereador["partido"] as String),
                                     const SizedBox(height: 8),
                                     Text(
-                                      "${quantidadeProjetos(vereador["id"])} projetos",
+                                      "${quantidadeProjetos(vereador["nome"])} projetos",
                                     ),
                                   ],
                                 ),
