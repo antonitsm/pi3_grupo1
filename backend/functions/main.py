@@ -1377,7 +1377,8 @@ def extract_project_with_ai(archive_id, archive_data):
     AUTORES_COLETIVOS = {
         "câmara municipal de vereadores",
         "câmara de vereadores",
-        "câmara municipal"
+        "câmara municipal",
+        "prefeitura municipal de itá"
     }
 
     autoria = [

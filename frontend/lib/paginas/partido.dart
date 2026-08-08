@@ -109,58 +109,66 @@ class _PartidosPageState extends State<PartidosPage> {
                       context: context,
                       useSafeArea: true,
                       builder: (context) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              title: const Text("A-Z"),
-                              onTap: () {
-                                setState(() {
-                                  partidosFiltrados.sort(
-                                    (a, b) => a["sigla"].compareTo(b["sigla"]),
-                                  );
-                                });
-                                Navigator.pop(context);
-                              },
-                            ),
-                            ListTile(
-                              title: const Text("Z-A"),
-                              onTap: () {
-                                setState(() {
-                                  partidosFiltrados.sort(
-                                    (a, b) => b["sigla"].compareTo(a["sigla"]),
-                                  );
-                                });
-                                Navigator.pop(context);
-                              },
-                            ),
-                            ListTile(
-                              title: const Text("Mais antigos"),
-                              onTap: () {
-                                setState(() {
-                                  partidosFiltrados.sort(
-                                    (a, b) => a["ano_criacao"].compareTo(
-                                      b["ano_criacao"],
-                                    ),
-                                  );
-                                });
-                                Navigator.pop(context);
-                              },
-                            ),
-                            ListTile(
-                              title: const Text("Mais novos"),
-                              onTap: () {
-                                setState(() {
-                                  partidosFiltrados.sort(
-                                    (a, b) => b["ano_criacao"].compareTo(
-                                      a["ano_criacao"],
-                                    ),
-                                  );
-                                });
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
+                        return SafeArea(
+                          top: false,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                title: const Text("A-Z"),
+                                onTap: () {
+                                  setState(() {
+                                    partidosFiltrados.sort(
+                                      (a, b) =>
+                                          a["sigla"].compareTo(b["sigla"]),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+
+                              ListTile(
+                                title: const Text("Z-A"),
+                                onTap: () {
+                                  setState(() {
+                                    partidosFiltrados.sort(
+                                      (a, b) =>
+                                          b["sigla"].compareTo(a["sigla"]),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+
+                              ListTile(
+                                title: const Text("Mais antigos"),
+                                onTap: () {
+                                  setState(() {
+                                    partidosFiltrados.sort(
+                                      (a, b) => a["ano_criacao"].compareTo(
+                                        b["ano_criacao"],
+                                      ),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+
+                              ListTile(
+                                title: const Text("Mais novos"),
+                                onTap: () {
+                                  setState(() {
+                                    partidosFiltrados.sort(
+                                      (a, b) => b["ano_criacao"].compareTo(
+                                        a["ano_criacao"],
+                                      ),
+                                    );
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          ),
                         );
                       },
                     );

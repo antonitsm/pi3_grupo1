@@ -425,7 +425,7 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
               backgroundImage:
                   vereador["fotoUrl"] != null &&
                       vereador["fotoUrl"].toString().isNotEmpty
-                  ? NetworkImage(vereador["foto"])
+                  ? NetworkImage(vereador["fotoUrl"])
                   : null,
               child:
                   vereador["fotoUrl"] == null ||

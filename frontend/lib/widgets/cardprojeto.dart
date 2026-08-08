@@ -1,23 +1,11 @@
 import 'package:flutter/material.dart';
 import 'projeto_detalhe.dart';
-
-import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 
-class CardProjeto extends StatefulWidget {
+class CardProjeto extends StatelessWidget {
   final Map<String, dynamic> projeto;
 
   const CardProjeto({super.key, required this.projeto});
-
-  @override
-  State<CardProjeto> createState() => _CardProjetoState();
-}
-
-class _CardProjetoState extends State<CardProjeto> {
-  final ApiService api = ApiService();
-
-  bool liked = false;
-  bool disliked = false;
 
   String formatarDataPublicacao(dynamic data) {
     if (data == null || data.toString().isEmpty) {
@@ -35,14 +23,14 @@ class _CardProjetoState extends State<CardProjeto> {
 
   @override
   Widget build(BuildContext context) {
-    final tags = (widget.projeto["tags"] as List?) ?? [];
+    final tags = (projeto["tags"] as List?) ?? [];
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ProjetoDetalhePage(projeto: widget.projeto),
+            builder: (_) => ProjetoDetalhePage(projeto: projeto),
           ),
         );
       },
@@ -65,14 +53,14 @@ class _CardProjetoState extends State<CardProjeto> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.projeto["titulo"],
+              projeto["titulo"],
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
 
             const SizedBox(height: 6),
 
             Text(
-              widget.projeto["ideia_central"],
+              projeto["ideia_central"],
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -97,92 +85,24 @@ class _CardProjetoState extends State<CardProjeto> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  formatarDataPublicacao(widget.projeto["data_publicacao"]),
+                  formatarDataPublicacao(projeto["data_publicacao"]),
                   style: const TextStyle(fontSize: 12),
                 ),
 
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: () async {
-                        try {
-                          final resposta = await api.reagirProjeto(
-                            widget.projeto["id"].toString(),
-                            "like",
-                          );
-
-                          setState(() {
-                            liked = !liked;
-
-                            if (liked) {
-                              disliked = false;
-                            }
-
-                            if (resposta["likes"] != null) {
-                              widget.projeto["likes"] = resposta["likes"];
-                            }
-                          });
-                        } catch (e) {
-                          print("Erro ao curtir projeto: $e");
-                        }
-                      },
-                      child: Row(
-                        children: [
-                          _reaction(
-                            Icons.thumb_up,
-                            liked ? Colors.green : Colors.grey,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "${widget.projeto["likes"] ?? 0}",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
+                    _reaction(
+                      Icons.thumb_up,
+                      Colors.green,
+                      projeto["likes"] ?? 0,
                     ),
 
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
 
-                    GestureDetector(
-                      onTap: () async {
-                        try {
-                          final resposta = await api.reagirProjeto(
-                            widget.projeto["id"].toString(),
-                            "dislike",
-                          );
-
-                          setState(() {
-                            disliked = !disliked;
-
-                            if (disliked) {
-                              liked = false;
-                            }
-
-                            if (resposta["dislikes"] != null) {
-                              widget.projeto["dislikes"] = resposta["dislikes"];
-                            }
-                          });
-                        } catch (e) {
-                          print("Erro ao descurtir projeto: $e");
-                        }
-                      },
-                      child: Row(
-                        children: [
-                          _reaction(
-                            Icons.thumb_down,
-                            disliked ? Colors.red : Colors.grey,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "${widget.projeto["dislikes"] ?? 0}",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
+                    _reaction(
+                      Icons.thumb_down,
+                      Colors.red,
+                      projeto["dislikes"] ?? 0,
                     ),
                   ],
                 ),
@@ -194,14 +114,26 @@ class _CardProjetoState extends State<CardProjeto> {
     );
   }
 
-  Widget _reaction(IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, color: Colors.white, size: 18),
+  Widget _reaction(IconData icon, Color color, dynamic quantidade) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
+        ),
+
+        const SizedBox(width: 4),
+
+        Text(
+          "$quantidade",
+          style: const TextStyle(fontWeight: FontWeight.normal),
+        ),
+      ],
     );
   }
 }

@@ -91,8 +91,10 @@ class _VereadoresPageState extends State<VereadoresPage> {
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
+                      useSafeArea: true,
                       builder: (context) {
                         return SafeArea(
+                          top: false,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -101,24 +103,29 @@ class _VereadoresPageState extends State<VereadoresPage> {
                                 onTap: () {
                                   setState(() {
                                     vereadoresFiltrados.sort(
-                                      (a, b) => quantidadeProjetos(
-                                        b["nome"],
-                                      ).compareTo(quantidadeProjetos(a["nome"])),
+                                      (a, b) => quantidadeProjetos(b["nome"])
+                                          .compareTo(
+                                            quantidadeProjetos(a["nome"]),
+                                          ),
                                     );
                                   });
+
                                   Navigator.pop(context);
                                 },
                               ),
+
                               ListTile(
                                 title: const Text("Menos projetos primeiro"),
                                 onTap: () {
                                   setState(() {
                                     vereadoresFiltrados.sort(
-                                      (a, b) => quantidadeProjetos(
-                                        a["nome"],
-                                      ).compareTo(quantidadeProjetos(b["nome"])),
+                                      (a, b) => quantidadeProjetos(a["nome"])
+                                          .compareTo(
+                                            quantidadeProjetos(b["nome"]),
+                                          ),
                                     );
                                   });
+
                                   Navigator.pop(context);
                                 },
                               ),
