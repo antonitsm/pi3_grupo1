@@ -94,7 +94,19 @@ class _PartidosPageState extends State<PartidosPage> {
           // TÍTULO
           const Center(child: Text("Partidos", style: AppTextStyles.pageTitle)),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 4),
+
+          const Text(
+                  "Partidos representados atualmente",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF555555),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+
+          const SizedBox(height: 15),
 
           // FILTRO + BUSCA
           Padding(

@@ -89,7 +89,9 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
       bottomNavigationBar: const Rodape(paginaAtual: 0),
       appBar: const BarraSuperior(),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 100),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -120,7 +122,6 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
                   padding: const EdgeInsets.all(16),
 
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEAEAEA),
                     borderRadius: BorderRadius.circular(20),
 
                     border: Border.all(
@@ -136,37 +137,100 @@ class _ProjetoDetalhePageState extends State<ProjetoDetalhePage> {
 
                       const SizedBox(height: 12),
 
-                      Text(
-                        "🎯 Objetivo\n${widget.projeto["ideia_central"]}",
-                        style: AppTextStyles.body,
+                      RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.body.copyWith(
+                            color: Colors.black,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: "🎯 Objetivo:\n",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            TextSpan(
+                              text: "${widget.projeto["ideia_central"]}",
+                            ),
+                          ],
+                        ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
 
-                      Text(
-                        "📍 Localidades afetadas\n${widget.projeto["localidades_afetadas"]}",
-                        style: AppTextStyles.body,
+                      RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.body.copyWith(
+                            color: Colors.black,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: "📍 Localidades afetadas:\n",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            TextSpan(
+                              text: "${widget.projeto["localidades_afetadas"]}",
+                            ),
+                          ],
+                        ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
 
-                      Text(
-                        "📅 Quando será executado\n${widget.projeto["quando_sera_executado"]}",
-                        style: AppTextStyles.body,
+                      RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.body.copyWith(
+                            color: Colors.black,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: "📅 Quando será executado:\n",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            TextSpan(
+                              text:
+                                  "${widget.projeto["quando_sera_executado"]}",
+                            ),
+                          ],
+                        ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
 
-                      Text(
-                        "⚙️ Como será executado\n${widget.projeto["como_sera_executado"]}",
-                        style: AppTextStyles.body,
+                      RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.body.copyWith(
+                            color: Colors.black,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: "⚙️ Como será executado\n",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            TextSpan(
+                              text: "${widget.projeto["como_sera_executado"]}",
+                            ),
+                          ],
+                        ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
 
-                      Text(
-                        "👤 Autoria\n${(widget.projeto["autoria"] as List).join(", ")}",
-                        style: AppTextStyles.body,
+                      RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.body.copyWith(
+                            color: Colors.black,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: "👤 Autoria\n",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            TextSpan(
+                              text: (widget.projeto["autoria"] as List).join(
+                                ", ",
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: 15),

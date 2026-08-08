@@ -79,7 +79,19 @@ class _VereadoresPageState extends State<VereadoresPage> {
           // TÍTULO
           const Text("Vereadores", style: AppTextStyles.pageTitle),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 4),
+
+          const Text(
+                  "Vereadores do atual mandato em Itá-SC",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF555555),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+
+          const SizedBox(height: 15),
 
           // FILTRO + BUSCA
           Padding(
